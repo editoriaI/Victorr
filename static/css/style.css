@@ -751,96 +751,28 @@ body.victor-theme {
     color: var(--accent-pink);
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .dashboard-header {
-        padding: 1rem;
-        flex-direction: column;
-        gap: 1rem;
-    }
-    
-    .header-center {
-        order: -1;
-    }
-    
-    .dashboard-container {
-        flex-direction: column;
-    }
-    
-    .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-        top: 0;
-    }
-    
-    .sidebar-nav {
-        flex-direction: row;
-        overflow-x: auto;
-        padding: 0 1rem;
-    }
-    
-    .nav-item {
-        white-space: nowrap;
-        border-left: none;
-        border-bottom: 3px solid transparent;
-    }
-    
-    .nav-item.active {
-        border-left: none;
-        border-bottom-color: var(--accent-pink);
-    }
-    
-    .main-content {
-        padding: 1rem;
-        max-height: none;
-    }
-    
-    .dashboard-cards {
-        grid-template-columns: 1fr;
-    }
-    
-    .market-filters {
-        flex-direction: column;
-    }
-    
-    .market-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .settings-grid {
-        grid-template-columns: 1fr;
-    }
+/* Desktop-only styles - mobile responsiveness removed */
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><circle cx="200" cy="200" r="2" fill="rgba(255,95,162,0.1)"/><circle cx="800" cy="300" r="2" fill="rgba(161,161,161,0.1)"/><circle cx="400" cy="600" r="2" fill="rgba(255,95,162,0.1)"/><circle cx="900" cy="700" r="2" fill="rgba(161,161,161,0.1)"/></svg>');
+}
+.victor-image {
+    width: 400px;
+    height: 400px;
+    filter: drop-shadow(0 10px 30px rgba(255, 95, 162, 0.3));
+}
+.hero-actions {
+    margin-top: 2rem;
 }
 
-@media (max-width: 480px) {
-    .dashboard-header {
-        padding: 0.75rem;
-    }
-    
-    .victor-mood {
-        display: none;
-    }
-    
-    .user-info span {
-        display: none;
-    }
-    
-    .content-section h2 {
-        font-size: 1.5rem;
-    }
-    
-    .dashboard-card {
-        padding: 1.5rem;
-    }
-    
-    .activity-card {
-        padding: 1rem;
-    }
-    
-    .settings-card {
-        padding: 1.5rem;
-    }
+.hero-actions a {
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 /* Custom Scrollbars */
@@ -911,96 +843,4 @@ body.victor-theme {
     color: var(--accent-pink);
     border-left: 4px solid var(--accent-pink);
 }
-
-/* Mobile responsiveness for dashboard */
-@media (max-width: 768px) {
-    .dashboard-header {
-        flex-direction: column;
-        padding: 1rem;
-        text-align: center;
-    }
-    
-    .header-center {
-        margin: 0.5rem 0;
-    }
-    
-    .sidebar {
-        width: 100%;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        height: auto;
-        z-index: 1000;
-        background: var(--bg-secondary);
-        border-top: 1px solid var(--border-color);
-    }
-    
-    .sidebar-nav {
-        display: flex;
-        justify-content: space-around;
-        padding: 0.5rem;
-    }
-    
-    .nav-item {
-        flex-direction: column;
-        padding: 0.5rem;
-        min-width: auto;
-        text-align: center;
-    }
-    
-    .nav-item span {
-        font-size: 0.75rem;
-        margin-top: 0.25rem;
-    }
-    
-    .main-content {
-        margin-left: 0;
-        margin-bottom: 60px;
-        padding: 1rem;
-    }
-    
-    .dashboard-cards {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-    
-    .dashboard-card {
-        padding: 1rem;
-    }
-    
-    .market-filters {
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-    
-    .market-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 480px) {
-    .dashboard-header {
-        padding: 0.75rem;
-    }
-    
-    .header-left h1 {
-        font-size: 1.25rem;
-    }
-    
-    .nav-item span {
-        display: none;
-    }
-    
-    .main-content {
-        padding: 0.75rem;
-    }
-    
-    .dashboard-card {
-        padding: 0.75rem;
-    }
-    
-    .user-avatar {
-        width: 24px;
-        height: 24px;
-    }
-}
+/* Desktop-only styles - mobile responsiveness removed */

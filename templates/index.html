@@ -7,92 +7,42 @@
     <!-- Hero Section -->
     <section class="hero-section">
         <div class="container">
-            <div class="row align-items-center min-vh-100">
-                <div class="col-lg-6">
-                    <div class="hero-content">
-                        <h1 class="hero-title">
-                            Meet <span class="text-primary">Victor</span>
-                        </h1>
-                        <p class="hero-subtitle">
-                            Your shadowy companion for Highrise trading
-                        </p>
-                        <p class="hero-description">
-                            Victor brings order to chaos in the Highrise marketplace. 
-                            Verify your identity, trade with confidence, and let the darkness guide your deals.
-                        </p>
-                        
-                        <div class="hero-actions">
-                            <div class="login-section">
-                                <p class="login-question">Is Victor in your server?</p>
-                                <div class="button-group">
-                                    {% if not session.user_id %}
-                                        <a href="{{ url_for('discord_auth') }}" class="btn btn-primary btn-lg me-3">
-                                            <i data-feather="log-in"></i>
-                                            Log in
-                                        </a>
-                                    {% else %}
-                                        <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg me-3">
-                                            <i data-feather="monitor"></i>
-                                            Open Dashboard
-                                        </a>
-                                    {% endif %}
-                                    <a href="https://discord.com/oauth2/authorize?client_id={{ discord_client_id }}&permissions=8&scope=bot%20applications.commands" 
-                                       class="btn btn-outline-light btn-lg" target="_blank">
-                                        <i data-feather="plus-circle"></i>
-                                        Add to Server
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="hero-stats mt-4">
-                            <div class="row text-center">
-                                <div class="col-4">
-                                    <div class="stat-item">
-                                        <div class="stat-number">24/7</div>
-                                        <div class="stat-label">Uptime</div>
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="stat-item">
-                                        <div class="stat-number">Secure</div>
-                                        <div class="stat-label">Trading</div>
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="stat-item">
-                                        <div class="stat-number">Open</div>
-                                        <div class="stat-label">Source</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="hero-title">
+                        Meet <span class="text-primary">Victor</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        Your shadowy companion for Highrise trading
+                    </p>
+                    <p class="hero-description">
+                        Victor brings order to chaos in the Highrise marketplace. 
+                        Verify your identity, trade with confidence, and let the darkness guide your deals.
+                    </p>
+                    
+                    <div class="hero-actions">
+                        {% if not session.user_id %}
+                            <a href="{{ url_for('discord_auth') }}" class="btn btn-primary btn-lg me-3">
+                                <i data-feather="log-in"></i>
+                                Log in
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg me-3">
+                                <i data-feather="monitor"></i>
+                                Open Dashboard
+                            </a>
+                        {% endif %}
+                        <a href="https://discord.com/oauth2/authorize?client_id={{ discord_client_id }}&permissions=8&scope=bot%20applications.commands" 
+                           class="btn btn-outline-light btn-lg" target="_blank">
+                            <i data-feather="plus-circle"></i>
+                            Add to Server
+                        </a>
                     </div>
                 </div>
                 
-                <div class="col-lg-6">
-                    <div class="hero-visual">
-                        <div class="victor-avatar">
-                            <img src="{{ url_for('static', filename='images/victor.svg') }}" 
-                                 alt="Victor" class="victor-image">
-                            <div class="avatar-glow"></div>
-                        </div>
-                        
-                        <div class="floating-elements">
-                            <div class="floating-card card-1">
-                                <i data-feather="check-circle"></i>
-                                <span>Verified Trading</span>
-                            </div>
-                            <div class="floating-card card-2">
-                                <i data-feather="trending-up"></i>
-                                <span>Market Analytics</span>
-                            </div>
-                            <div class="floating-card card-3">
-                                <i data-feather="users"></i>
-                                <span>Community</span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="col-md-6 text-center">
+                    <img src="{{ url_for('static', filename='images/victor.svg') }}" 
+                         alt="Victor" class="victor-image">
                 </div>
             </div>
         </div>
