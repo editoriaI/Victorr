@@ -182,24 +182,7 @@
                         Join the community of verified Highrise traders and experience secure, efficient trading like never before.
                     </p>
                     
-                    <div class="cta-buttons">
-                        {% if not session.user_id %}
-                            <a href="{{ url_for('discord_auth') }}" class="btn btn-primary btn-lg me-3">
-                                <i data-feather="log-in"></i>
-                                Log in
-                            </a>
-                        {% else %}
-                            <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg me-3">
-                                <i data-feather="arrow-right"></i>
-                                Enter Dashboard
-                            </a>
-                        {% endif %}
-                        <a href="https://discord.com/oauth2/authorize?client_id={{ discord_client_id }}&permissions=8&scope=bot%20applications.commands" 
-                           class="btn btn-outline-light btn-lg" target="_blank">
-                            <i data-feather="plus-circle"></i>
-                            Add to Server
-                        </a>
-                    </div>
+
                 </div>
             </div>
         </div>
