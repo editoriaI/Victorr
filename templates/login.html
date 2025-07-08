@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Victor's Dashboard{% endblock %}
+
+{% block content %}
+<div class="login-page">
+    <div class="container">
+        <div class="row justify-content-center align-items-center min-vh-100">
+            <div class="col-md-6 col-lg-5">
+                <div class="login-card">
+                    <div class="text-center mb-4">
+                        <img src="{{ url_for('static', filename='images/victor.svg') }}" 
+                             alt="Victor" class="login-avatar mb-3">
+                        <h2 class="login-title">Welcome to the Shadows</h2>
+                        <p class="login-subtitle">Victor's domain awaits your presence</p>
+                    </div>
+                    
+                    <div class="login-form">
+                        <p class="login-description">
+                            To access Victor's dashboard, authenticate with your Discord account. 
+                            Only authorized users may enter these halls.
+                        </p>
+                        
+                        <a href="{{ url_for('discord_auth') }}" class="btn btn-discord btn-lg w-100">
+                            <svg class="discord-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.211.375-.445.865-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.010c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
+                            </svg>
+                            Continue with Discord
+                        </a>
+                        
+                        <div class="login-features mt-4">
+                            <h6 class="text-muted mb-3">What you'll get access to:</h6>
+                            <ul class="feature-list">
+                                <li>
+                                    <i data-feather="shield-check"></i>
+                                    <span>User verification management</span>
+                                </li>
+                                <li>
+                                    <i data-feather="shopping-bag"></i>
+                                    <span>Marketplace administration</span>
+                                </li>
+                                <li>
+                                    <i data-feather="bar-chart-3"></i>
+                                    <span>Analytics and statistics</span>
+                                </li>
+                                <li>
+                                    <i data-feather="settings"></i>
+                                    <span>Bot configuration</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="login-footer mt-4">
+                        <p class="text-muted small text-center">
+                            By continuing, you agree to Victor's terms of service and privacy policy.
+                            Your Discord data will only be used for authentication purposes.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.login-page {
+    background: var(--bg-primary);
+    min-height: 100vh;
+}
+
+.login-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 3rem;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.login-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent-pink), var(--accent-steel));
+}
+
+.login-avatar {
+    width: 80px;
+    height: 80px;
+    filter: drop-shadow(0 4px 12px rgba(255, 95, 162, 0.3));
+}
+
+.login-title {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.login-subtitle {
+    color: var(--text-muted);
+    font-style: italic;
+    margin-bottom: 0;
+}
+
+.login-description {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.btn-discord {
+    background: #5865F2;
+    border: none;
+    color: white;
+    padding: 0.875rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.btn-discord:hover {
+    background: #4752C4;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(88, 101, 242, 0.3);
+}
+
+.discord-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.feature-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    color: var(--text-muted);
+}
+
+.feature-list li i {
+    color: var(--accent-pink);
+    width: 16px;
+    height: 16px;
+}
+
+.login-footer {
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .login-card {
+        padding: 2rem 1.5rem;
+    }
+}
+</style>
+{% endblock %}

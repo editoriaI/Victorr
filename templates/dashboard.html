@@ -1,0 +1,533 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Victor's Domain{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>Victor's Menu</h2>
+        </div>
+        
+        <div class="sidebar-nav">
+            <a href="#overview" class="nav-item active" data-section="overview">
+                <i data-feather="home"></i>
+                <span>Overview</span>
+            </a>
+            <a href="#users" class="nav-item" data-section="users">
+                <i data-feather="users"></i>
+                <span>Users</span>
+            </a>
+            <a href="#marketplace" class="nav-item" data-section="marketplace">
+                <i data-feather="shopping-bag"></i>
+                <span>Marketplace</span>
+            </a>
+            <a href="#analytics" class="nav-item" data-section="analytics">
+                <i data-feather="bar-chart-3"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="#settings" class="nav-item" data-section="settings">
+                <i data-feather="settings"></i>
+                <span>Settings</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Overview Section -->
+        <section id="overview" class="content-section active">
+            <div class="welcome-message">
+                <h2>Welcome back, {{ session.username }}</h2>
+                <p>Victor's domain is operating smoothly. Your presence brings order to the chaos.</p>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="dashboard-cards">
+                <div class="dashboard-card">
+                    <div class="card-icon">
+                        <i data-feather="users"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Total Users</h3>
+                        <div class="stat-number">{{ stats.total_users or 0 }}</div>
+                        <p>Registered Discord users</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-card">
+                    <div class="card-icon">
+                        <i data-feather="shield-check"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Verified Users</h3>
+                        <div class="stat-number">{{ stats.verified_users or 0 }}</div>
+                        <p>Highrise verified accounts</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-card">
+                    <div class="card-icon">
+                        <i data-feather="shopping-bag"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Active Listings</h3>
+                        <div class="stat-number">{{ stats.active_listings or 0 }}</div>
+                        <p>Items for sale</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-card">
+                    <div class="card-icon">
+                        <i data-feather="trending-up"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Transactions</h3>
+                        <div class="stat-number">{{ stats.total_transactions or 0 }}</div>
+                        <p>Completed trades</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="activity-card">
+                        <h4>Recent Users</h4>
+                        <div class="activity-list">
+                            {% if recent_users %}
+                                {% for user in recent_users %}
+                                <div class="activity-item">
+                                    <div class="activity-info">
+                                        <strong>{{ user.discord_username }}</strong>
+                                        {% if user.highrise_username %}
+                                            <small>({{ user.highrise_username }})</small>
+                                        {% endif %}
+                                        <div class="activity-meta">
+                                            <span class="status-badge status-{{ user.status }}">{{ user.status.title() }}</span>
+                                            <span class="activity-time">{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'Unknown' }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="empty-state">
+                                    <i data-feather="users"></i>
+                                    <p>No users yet</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="activity-card">
+                        <h4>Recent Listings</h4>
+                        <div class="activity-list">
+                            {% if recent_listings %}
+                                {% for listing in recent_listings %}
+                                <div class="activity-item">
+                                    <div class="activity-info">
+                                        <strong>{{ listing.item_name }}</strong>
+                                        <div class="activity-meta">
+                                            <span class="price">{{ "{:,}".format(listing.price) }} coins</span>
+                                            <span class="activity-time">{{ listing.created_at.strftime('%Y-%m-%d') if listing.created_at else 'Unknown' }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="empty-state">
+                                    <i data-feather="shopping-bag"></i>
+                                    <p>No listings yet</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Users Section -->
+        <section id="users" class="content-section">
+            <h2>User Management</h2>
+            
+            <div class="users-controls mb-4">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="search-box">
+                            <input type="text" class="form-control" placeholder="Search users..." id="userSearch">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="filter-controls">
+                            <select class="form-select" id="statusFilter">
+                                <option value="">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="verified">Verified</option>
+                                <option value="banned">Banned</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="users-table">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Discord User</th>
+                                <th>Highrise User</th>
+                                <th>Status</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">Loading users...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Marketplace Section -->
+        <section id="marketplace" class="content-section">
+            <h2>Marketplace Management</h2>
+            
+            <div class="marketplace-container">
+                <div class="marketplace-tabs">
+                    <button class="tab-btn active" data-tab="browse">Browse</button>
+                    <button class="tab-btn" data-tab="analytics">Analytics</button>
+                    <button class="tab-btn" data-tab="moderation">Moderation</button>
+                </div>
+
+                <div id="browse" class="tab-content active">
+                    <div class="market-filters">
+                        <input type="text" class="search-input" placeholder="Search items..." id="itemSearch">
+                        <select class="filter-select" id="categoryFilter">
+                            <option value="">All Categories</option>
+                            <option value="clothing">Clothing</option>
+                            <option value="accessories">Accessories</option>
+                            <option value="furniture">Furniture</option>
+                            <option value="pets">Pets</option>
+                        </select>
+                        <button class="search-btn" onclick="searchItems()">
+                            <i data-feather="search"></i>
+                            Search
+                        </button>
+                    </div>
+
+                    <div class="market-grid" id="marketItems">
+                        <div class="loading-message">Loading marketplace items...</div>
+                    </div>
+                </div>
+
+                <div id="analytics" class="tab-content">
+                    <div class="analytics-grid">
+                        <div class="analytics-card">
+                            <h4>Popular Categories</h4>
+                            <div class="chart-placeholder">
+                                <i data-feather="pie-chart"></i>
+                                <p>Category analytics coming soon</p>
+                            </div>
+                        </div>
+                        
+                        <div class="analytics-card">
+                            <h4>Price Trends</h4>
+                            <div class="chart-placeholder">
+                                <i data-feather="trending-up"></i>
+                                <p>Price trend analysis coming soon</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="moderation" class="tab-content">
+                    <div class="moderation-tools">
+                        <h4>Moderation Tools</h4>
+                        <p>Manage listings, handle reports, and moderate the marketplace.</p>
+                        
+                        <div class="mod-actions">
+                            <button class="btn btn-outline-warning">
+                                <i data-feather="flag"></i>
+                                View Reports
+                            </button>
+                            <button class="btn btn-outline-danger">
+                                <i data-feather="trash-2"></i>
+                                Remove Listing
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analytics Section -->
+        <section id="analytics" class="content-section">
+            <h2>Analytics & Insights</h2>
+            
+            <div class="analytics-dashboard">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="chart-card">
+                            <h4>User Growth</h4>
+                            <div class="chart-placeholder">
+                                <i data-feather="trending-up"></i>
+                                <p>User growth chart will be displayed here</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="metric-cards">
+                            <div class="metric-card">
+                                <div class="metric-icon">
+                                    <i data-feather="user-plus"></i>
+                                </div>
+                                <div class="metric-info">
+                                    <h5>New Users Today</h5>
+                                    <div class="metric-value">0</div>
+                                </div>
+                            </div>
+                            
+                            <div class="metric-card">
+                                <div class="metric-icon">
+                                    <i data-feather="shopping-cart"></i>
+                                </div>
+                                <div class="metric-info">
+                                    <h5>Listings Today</h5>
+                                    <div class="metric-value">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settings" class="content-section">
+            <h2>Bot Settings</h2>
+            
+            <div class="settings-grid">
+                <div class="settings-card">
+                    <h4>Verification Settings</h4>
+                    <div class="form-group">
+                        <label class="form-label">Auto-verification</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="autoVerification" checked>
+                            <label class="form-check-label" for="autoVerification">
+                                Enable automatic verification
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Verification timeout (minutes)</label>
+                        <input type="number" class="form-control" value="30" min="5" max="120">
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <h4>Marketplace Settings</h4>
+                    <div class="form-group">
+                        <label class="form-label">Max listing price</label>
+                        <input type="number" class="form-control" value="1000000" min="1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Listing duration (days)</label>
+                        <input type="number" class="form-control" value="30" min="1" max="90">
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <h4>Bot Behavior</h4>
+                    <div class="form-group">
+                        <label class="form-label">Victor's Mood</label>
+                        <select class="form-select">
+                            <option value="sarcastic" selected>Sarcastic</option>
+                            <option value="warm">Warm</option>
+                            <option value="professional">Professional</option>
+                            <option value="cryptic">Cryptic</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <h4>System</h4>
+                    <button class="btn btn-outline-info" onclick="runDiagnostics()">
+                        <i data-feather="activity"></i>
+                        Run Diagnostics
+                    </button>
+                    
+                    <button class="btn btn-outline-warning">
+                        <i data-feather="download"></i>
+                        Export Data
+                    </button>
+                </div>
+            </div>
+
+            <div class="text-end mt-4">
+                <button class="btn btn-primary">
+                    <i data-feather="save"></i>
+                    Save Settings
+                </button>
+            </div>
+        </section>
+    </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Initialize dashboard functionality
+document.addEventListener('DOMContentLoaded', function() {
+    initializeNavigation();
+    initializeMarketplaceTabs();
+    loadDashboardData();
+});
+
+function initializeNavigation() {
+    const navItems = document.querySelectorAll('.nav-item');
+    const contentSections = document.querySelectorAll('.content-section');
+
+    navItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetSection = item.getAttribute('data-section');
+
+            // Remove active class from all nav items and sections
+            navItems.forEach(nav => nav.classList.remove('active'));
+            contentSections.forEach(section => section.classList.remove('active'));
+
+            // Add active class to clicked nav item and corresponding section
+            item.classList.add('active');
+            document.getElementById(targetSection).classList.add('active');
+
+            // Update URL hash
+            window.location.hash = targetSection;
+        });
+    });
+
+    // Handle direct URL hash navigation
+    if (window.location.hash) {
+        const hashSection = window.location.hash.substr(1);
+        const targetNav = document.querySelector(`[data-section="${hashSection}"]`);
+        if (targetNav) {
+            targetNav.click();
+        }
+    }
+}
+
+function initializeMarketplaceTabs() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetTab = button.getAttribute('data-tab');
+
+            // Remove active class from all tabs and contents
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+
+            // Add active class to clicked tab and corresponding content
+            button.classList.add('active');
+            document.getElementById(targetTab).classList.add('active');
+        });
+    });
+}
+
+function loadDashboardData() {
+    // Load marketplace items when marketplace section is shown
+    const marketplaceNav = document.querySelector('[data-section="marketplace"]');
+    if (marketplaceNav) {
+        marketplaceNav.addEventListener('click', loadMarketplaceData);
+    }
+}
+
+function loadMarketplaceData() {
+    // Simulate loading marketplace data
+    const container = document.getElementById('marketItems');
+    container.innerHTML = '<div class="loading-message">Loading marketplace items...</div>';
+    
+    setTimeout(() => {
+        container.innerHTML = `
+            <div class="market-item">
+                <div class="item-name">Sample Item</div>
+                <div class="item-price">5,000 coins</div>
+                <div class="item-seller">Sold by: SampleUser</div>
+                <button class="buy-btn">View Details</button>
+            </div>
+            <div class="empty-state">
+                <i data-feather="shopping-bag"></i>
+                <p>No active listings at the moment</p>
+            </div>
+        `;
+        
+        // Reinitialize feather icons
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+    }, 1000);
+}
+
+function searchItems() {
+    const searchTerm = document.getElementById('itemSearch').value;
+    const category = document.getElementById('categoryFilter').value;
+    
+    // Simulate search
+    const container = document.getElementById('marketItems');
+    container.innerHTML = '<div class="loading-message">Searching...</div>';
+    
+    setTimeout(() => {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i data-feather="search"></i>
+                <p>No items found${searchTerm ? ` for "${searchTerm}"` : ''}</p>
+            </div>
+        `;
+        
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+    }, 500);
+}
+
+function runDiagnostics() {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+
+    btn.innerHTML = '<i data-feather="loader"></i> Running...';
+    btn.disabled = true;
+    
+    if (typeof feather !== 'undefined') {
+        feather.replace();
+    }
+
+    // Simulate diagnostic process
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+        
+        alert('Diagnostics complete. All systems operational.');
+    }, 3000);
+}
+
+function logout() {
+    if (confirm('Goodbye, darling. Try not to ruin anything in my absence.')) {
+        window.location.href = '/logout';
+    }
+}
+</script>
+{% endblock %}

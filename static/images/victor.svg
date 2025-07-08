@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="shadowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a1a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0e0e0e;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff5fa2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e5527a;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="hatGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2a2a2a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1a1a1a;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background circle with shadow -->
+  <circle cx="100" cy="100" r="95" fill="url(#shadowGradient)" opacity="0.8"/>
+  
+  <!-- Character body -->
+  <ellipse cx="100" cy="140" rx="35" ry="45" fill="#1a1a1a" stroke="#333" stroke-width="2"/>
+  
+  <!-- Character head -->
+  <circle cx="100" cy="80" r="30" fill="#1a1a1a" stroke="#333" stroke-width="2"/>
+  
+  <!-- Victorian top hat -->
+  <ellipse cx="100" cy="45" rx="25" ry="8" fill="url(#hatGradient)" stroke="#333" stroke-width="2"/>
+  <rect x="80" y="30" width="40" height="25" rx="3" fill="url(#hatGradient)" stroke="#333" stroke-width="2"/>
+  <ellipse cx="100" cy="30" rx="20" ry="6" fill="url(#hatGradient)" stroke="#333" stroke-width="2"/>
+  
+  <!-- Hat band with accent -->
+  <rect x="82" y="42" width="36" height="4" fill="url(#accentGradient)"/>
+  
+  <!-- Small decorative horns on hat -->
+  <polygon points="88,35 85,25 90,30" fill="#333"/>
+  <polygon points="112,35 115,25 110,30" fill="#333"/>
+  
+  <!-- Glowing eyes -->
+  <circle cx="92" cy="75" r="4" fill="url(#accentGradient)" filter="url(#glow)"/>
+  <circle cx="108" cy="75" r="4" fill="url(#accentGradient)" filter="url(#glow)"/>
+  
+  <!-- Small eye highlights -->
+  <circle cx="93" cy="73" r="1.5" fill="#ffffff" opacity="0.8"/>
+  <circle cx="109" cy="73" r="1.5" fill="#ffffff" opacity="0.8"/>
+  
+  <!-- Arms -->
+  <ellipse cx="75" cy="125" rx="12" ry="20" fill="#1a1a1a" stroke="#333" stroke-width="2" transform="rotate(-20 75 125)"/>
+  <ellipse cx="125" cy="125" rx="12" ry="20" fill="#1a1a1a" stroke="#333" stroke-width="2" transform="rotate(20 125 125)"/>
+  
+  <!-- Hands/gloves -->
+  <circle cx="68" cy="140" r="8" fill="#1a1a1a" stroke="#333" stroke-width="2"/>
+  <circle cx="132" cy="140" r="8" fill="#1a1a1a" stroke="#333" stroke-width="2"/>
+  
+  <!-- Victorian-style vest buttons -->
+  <circle cx="100" cy="120" r="2" fill="url(#accentGradient)"/>
+  <circle cx="100" cy="135" r="2" fill="url(#accentGradient)"/>
+  <circle cx="100" cy="150" r="2" fill="url(#accentGradient)"/>
+  
+  <!-- Small decorative chain from pocket watch -->
+  <path d="M 110 130 Q 115 125 120 130" stroke="url(#accentGradient)" stroke-width="1.5" fill="none"/>
+  <circle cx="120" cy="132" r="3" fill="url(#accentGradient)" stroke="#333" stroke-width="1"/>
+  
+  <!-- Mysterious aura/glow around character -->
+  <circle cx="100" cy="100" r="85" fill="none" stroke="url(#accentGradient)" stroke-width="1" opacity="0.3" stroke-dasharray="5,5">
+    <animateTransform
+      attributeName="transform"
+      attributeType="XML"
+      type="rotate"
+      from="0 100 100"
+      to="360 100 100"
+      dur="10s"
+      repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Small floating particles around Victor -->
+  <circle cx="60" cy="60" r="1.5" fill="url(#accentGradient)" opacity="0.6">
+    <animate attributeName="opacity" values="0.3;0.8;0.3" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="140" cy="70" r="1" fill="#a1a1a1" opacity="0.5">
+    <animate attributeName="opacity" values="0.2;0.7;0.2" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="50" cy="120" r="1.5" fill="url(#accentGradient)" opacity="0.4">
+    <animate attributeName="opacity" values="0.2;0.9;0.2" dur="5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="150" cy="130" r="1" fill="#a1a1a1" opacity="0.6">
+    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="3.5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Subtle shadow beneath character -->
+  <ellipse cx="100" cy="190" rx="40" ry="8" fill="#0e0e0e" opacity="0.4"/>
+</svg>

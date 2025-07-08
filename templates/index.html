@@ -1,0 +1,464 @@
+{% extends "base.html" %}
+
+{% block title %}Victor - Highrise Trading Bot{% endblock %}
+
+{% block content %}
+<div class="landing-page">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center min-vh-100">
+                <div class="col-lg-6">
+                    <div class="hero-content">
+                        <h1 class="hero-title">
+                            Meet <span class="text-primary">Victor</span>
+                        </h1>
+                        <p class="hero-subtitle">
+                            Your shadowy companion for Highrise trading
+                        </p>
+                        <p class="hero-description">
+                            Victor brings order to chaos in the Highrise marketplace. 
+                            Verify your identity, trade with confidence, and let the darkness guide your deals.
+                        </p>
+                        
+                        <div class="hero-actions">
+                            {% if not session.user_id %}
+                                <button id="accessDashboard" class="btn btn-primary btn-lg me-3">
+                                    <i data-feather="shield"></i>
+                                    Access Dashboard
+                                </button>
+                            {% else %}
+                                <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg me-3">
+                                    <i data-feather="monitor"></i>
+                                    Open Dashboard
+                                </a>
+                            {% endif %}
+                            
+                            <a href="https://discord.com/oauth2/authorize?client_id=YOUR_BOT_ID&permissions=8&scope=bot%20applications.commands" 
+                               class="btn btn-outline-light btn-lg" target="_blank">
+                                <i data-feather="plus-circle"></i>
+                                Invite Victor
+                            </a>
+                        </div>
+                        
+                        <div class="hero-stats mt-4">
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <div class="stat-item">
+                                        <div class="stat-number">24/7</div>
+                                        <div class="stat-label">Uptime</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-item">
+                                        <div class="stat-number">Secure</div>
+                                        <div class="stat-label">Trading</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-item">
+                                        <div class="stat-number">Open</div>
+                                        <div class="stat-label">Source</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="hero-visual">
+                        <div class="victor-avatar">
+                            <img src="{{ url_for('static', filename='images/victor.svg') }}" 
+                                 alt="Victor" class="victor-image">
+                            <div class="avatar-glow"></div>
+                        </div>
+                        
+                        <div class="floating-elements">
+                            <div class="floating-card card-1">
+                                <i data-feather="shield-check"></i>
+                                <span>Verified Trading</span>
+                            </div>
+                            <div class="floating-card card-2">
+                                <i data-feather="trending-up"></i>
+                                <span>Market Analytics</span>
+                            </div>
+                            <div class="floating-card card-3">
+                                <i data-feather="users"></i>
+                                <span>Community</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center mb-5">
+                    <h2 class="section-title">What Victor Offers</h2>
+                    <p class="section-subtitle">Embrace the darkness of secure trading</p>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i data-feather="shield"></i>
+                        </div>
+                        <h3>Secure Verification</h3>
+                        <p>Link your Discord and Highrise accounts through bio verification. No passwords, no personal data.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i data-feather="shopping-bag"></i>
+                        </div>
+                        <h3>Marketplace</h3>
+                        <p>Buy and sell Highrise items with confidence. Browse categories, search items, and connect with traders.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i data-feather="monitor"></i>
+                        </div>
+                        <h3>Admin Dashboard</h3>
+                        <p>Manage your server with Victor's web dashboard. Track users, monitor trades, and configure settings.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i data-feather="activity"></i>
+                        </div>
+                        <h3>Real-time Updates</h3>
+                        <p>Get instant notifications about trades, verifications, and marketplace activity.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i data-feather="lock"></i>
+                        </div>
+                        <h3>Privacy First</h3>
+                        <p>Victor respects your privacy. No data mining, no tracking, just secure trading.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i data-feather="zap"></i>
+                        </div>
+                        <h3>Lightning Fast</h3>
+                        <p>Optimized for speed with 24/7 uptime. Victor never sleeps, so your trades don't have to wait.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h2 class="cta-title">Ready to enter the shadows?</h2>
+                    <p class="cta-description">
+                        Join the community of verified Highrise traders and experience secure, efficient trading like never before.
+                    </p>
+                    
+                    {% if not session.user_id %}
+                        <button id="ctaAccessDashboard" class="btn btn-primary btn-lg">
+                            <i data-feather="arrow-right"></i>
+                            Get Started
+                        </button>
+                    {% else %}
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">
+                            <i data-feather="arrow-right"></i>
+                            Enter Dashboard
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<style>
+.landing-page {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.hero-section {
+    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><circle cx="200" cy="200" r="2" fill="rgba(255,95,162,0.1)"/><circle cx="800" cy="300" r="2" fill="rgba(161,161,161,0.1)"/><circle cx="400" cy="600" r="2" fill="rgba(255,95,162,0.1)"/><circle cx="900" cy="700" r="2" fill="rgba(161,161,161,0.1)"/></svg>');
+    animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-pink) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-subtitle {
+    font-size: 1.5rem;
+    color: var(--accent-steel);
+    margin-bottom: 1.5rem;
+    font-style: italic;
+}
+
+.hero-description {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.victor-avatar {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.victor-image {
+    width: 300px;
+    height: 300px;
+    filter: drop-shadow(0 10px 30px rgba(255, 95, 162, 0.3));
+    animation: victorFloat 6s ease-in-out infinite;
+}
+
+@keyframes victorFloat {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(2deg); }
+}
+
+.avatar-glow {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(255, 95, 162, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: pulse 4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+.floating-elements {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.floating-card {
+    position: absolute;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: var(--shadow);
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    animation: cardFloat 8s ease-in-out infinite;
+}
+
+.floating-card i {
+    color: var(--accent-pink);
+    width: 16px;
+    height: 16px;
+}
+
+.card-1 {
+    top: 20%;
+    left: -10%;
+    animation-delay: 0s;
+}
+
+.card-2 {
+    top: 60%;
+    right: -10%;
+    animation-delay: 2s;
+}
+
+.card-3 {
+    bottom: 20%;
+    left: 10%;
+    animation-delay: 4s;
+}
+
+@keyframes cardFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); }
+}
+
+.hero-stats .stat-item {
+    padding: 1rem;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--accent-pink);
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.features-section {
+    padding: 6rem 0;
+    background: var(--bg-secondary);
+}
+
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.section-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.feature-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.feature-card:hover {
+    border-color: var(--accent-pink);
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-5px);
+}
+
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--accent-pink), #e5527a);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.feature-icon i {
+    color: white;
+    width: 24px;
+    height: 24px;
+}
+
+.feature-card h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.feature-card p {
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.cta-section {
+    padding: 6rem 0;
+    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+}
+
+.cta-title {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.cta-description {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .victor-image {
+        width: 200px;
+        height: 200px;
+    }
+    
+    .floating-card {
+        display: none;
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Handle access dashboard buttons
+document.addEventListener('DOMContentLoaded', function() {
+    const accessButtons = document.querySelectorAll('#accessDashboard, #ctaAccessDashboard');
+    accessButtons.forEach(button => {
+        if (button) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = '/auth/discord';
+            });
+        }
+    });
+});
+</script>
+{% endblock %}
