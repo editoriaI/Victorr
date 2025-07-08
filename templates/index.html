@@ -22,23 +22,20 @@
                         </p>
                         
                         <div class="hero-actions">
-                            {% if not session.user_id %}
-                                <a href="{{ url_for('discord_auth') }}" class="btn btn-primary btn-lg me-3">
-                                    <i data-feather="shield"></i>
-                                    Access Dashboard
-                                </a>
-                            {% else %}
-                                <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg me-3">
-                                    <i data-feather="monitor"></i>
-                                    Open Dashboard
-                                </a>
-                            {% endif %}
-                            
-                            <a href="https://discord.com/oauth2/authorize?client_id=YOUR_BOT_ID&permissions=8&scope=bot%20applications.commands" 
-                               class="btn btn-outline-light btn-lg" target="_blank">
-                                <i data-feather="plus-circle"></i>
-                                Invite Victor
-                            </a>
+                            <div class="login-section">
+                                <p class="login-question">Is Victor in your server?</p>
+                                {% if not session.user_id %}
+                                    <a href="{{ url_for('discord_auth') }}" class="btn btn-primary btn-lg">
+                                        <i data-feather="log-in"></i>
+                                        Log in
+                                    </a>
+                                {% else %}
+                                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">
+                                        <i data-feather="monitor"></i>
+                                        Open Dashboard
+                                    </a>
+                                {% endif %}
+                            </div>
                         </div>
                         
                         <div class="hero-stats mt-4">
@@ -180,8 +177,8 @@
                     
                     {% if not session.user_id %}
                         <a href="{{ url_for('discord_auth') }}" class="btn btn-primary btn-lg">
-                            <i data-feather="arrow-right"></i>
-                            Get Started
+                            <i data-feather="log-in"></i>
+                            Log in
                         </a>
                     {% else %}
                         <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">
@@ -427,6 +424,18 @@
     max-width: 600px;
     margin-left: auto;
     margin-right: auto;
+}
+
+.login-section {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.login-question {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    font-weight: 500;
 }
 
 @media (max-width: 768px) {
