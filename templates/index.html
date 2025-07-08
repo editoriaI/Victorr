@@ -23,10 +23,10 @@
                         
                         <div class="hero-actions">
                             {% if not session.user_id %}
-                                <button id="accessDashboard" class="btn btn-primary btn-lg me-3">
+                                <a href="{{ url_for('discord_auth') }}" class="btn btn-primary btn-lg me-3">
                                     <i data-feather="shield"></i>
                                     Access Dashboard
-                                </button>
+                                </a>
                             {% else %}
                                 <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg me-3">
                                     <i data-feather="monitor"></i>
@@ -76,7 +76,7 @@
                         
                         <div class="floating-elements">
                             <div class="floating-card card-1">
-                                <i data-feather="shield-check"></i>
+                                <i data-feather="check-circle"></i>
                                 <span>Verified Trading</span>
                             </div>
                             <div class="floating-card card-2">
@@ -179,10 +179,10 @@
                     </p>
                     
                     {% if not session.user_id %}
-                        <button id="ctaAccessDashboard" class="btn btn-primary btn-lg">
+                        <a href="{{ url_for('discord_auth') }}" class="btn btn-primary btn-lg">
                             <i data-feather="arrow-right"></i>
                             Get Started
-                        </button>
+                        </a>
                     {% else %}
                         <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">
                             <i data-feather="arrow-right"></i>
