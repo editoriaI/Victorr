@@ -51,7 +51,7 @@ def require_auth(f):
 @app.route('/')
 def index():
     """Landing page"""
-    return render_template('index.html')
+    return render_template('index.html', discord_client_id=DISCORD_CLIENT_ID)
 
 @app.route('/login')
 def login():
