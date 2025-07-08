@@ -33,15 +33,48 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Navigation functionality
     initializeNavigation();
-    
+
     // Marketplace functionality
     initializeMarketplace();
-    
+
     // Settings functionality
     initializeSettings();
-    
+
     // Auto-refresh data periodically
     startDataRefresh();
+});
+
+// Mobile sidebar functions
+function toggleMobileSidebar() {
+    const sidebar = document.getElementById('mobileSidebar');
+    const overlay = document.querySelector('.mobile-sidebar-overlay');
+
+    if (sidebar && overlay) {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active');
+    }
+}
+
+function closeMobileSidebar() {
+    const sidebar = document.getElementById('mobileSidebar');
+    const overlay = document.querySelector('.mobile-sidebar-overlay');
+
+    if (sidebar && overlay) {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
+    }
+}
+
+// Close sidebar when clicking outside on mobile
+document.addEventListener('click', function(event) {
+    const sidebar = document.getElementById('mobileSidebar');
+    const toggleBtn = document.querySelector('.mobile-sidebar-toggle');
+
+    if (sidebar && toggleBtn && window.innerWidth <= 768) {
+        if (!sidebar.contains(event.target) && !toggleBtn.contains(event.target)) {
+            closeMobileSidebar();
+        }
+    }
 });
 
 function initializeNavigation() {
@@ -66,7 +99,7 @@ function initializeNavigation() {
 
             // Update URL hash
             window.location.hash = targetSection;
-            
+
             // Load section-specific data
             loadSectionData(targetSection);
         });
@@ -168,7 +201,7 @@ function loadUsersData() {
                 </td>
             </tr>
         `;
-        
+
         // Reinitialize icons
         if (typeof feather !== 'undefined') {
             feather.replace();
@@ -197,14 +230,14 @@ function loadTabData(tab) {
 function loadMarketItems() {
     const container = document.getElementById('marketItems');
     if (!container) return;
-    
+
     container.innerHTML = `
         <div class="loading-message">
             <i data-feather="loader"></i>
             Loading marketplace items...
         </div>
     `;
-    
+
     // Simulate loading delay
     setTimeout(() => {
         container.innerHTML = `
@@ -214,7 +247,7 @@ function loadMarketItems() {
                 <small>Items will appear here when users create listings</small>
             </div>
         `;
-        
+
         if (typeof feather !== 'undefined') {
             feather.replace();
         }
@@ -278,31 +311,31 @@ function animateNumber(element, from, to) {
         const elapsed = Date.now() - start;
         const progress = Math.min(elapsed / duration, 1);
         const current = Math.floor(from + (range * progress));
-        
+
         element.textContent = current.toLocaleString();
-        
+
         if (progress < 1) {
             requestAnimationFrame(updateNumber);
         }
     }
-    
+
     updateNumber();
 }
 
 function searchItems() {
     const searchTerm = document.getElementById('itemSearch')?.value || '';
     const category = document.getElementById('categoryFilter')?.value || '';
-    
+
     const container = document.getElementById('marketItems');
     if (!container) return;
-    
+
     container.innerHTML = `
         <div class="loading-message">
             <i data-feather="search"></i>
             Searching for items...
         </div>
     `;
-    
+
     // Simulate search
     setTimeout(() => {
         container.innerHTML = `
@@ -312,7 +345,7 @@ function searchItems() {
                 <small>Try adjusting your search criteria</small>
             </div>
         `;
-        
+
         if (typeof feather !== 'undefined') {
             feather.replace();
         }
@@ -325,7 +358,7 @@ function runDiagnostics() {
 
     btn.innerHTML = '<i data-feather="loader"></i> Running diagnostics...';
     btn.disabled = true;
-    
+
     if (typeof feather !== 'undefined') {
         feather.replace();
     }
@@ -334,11 +367,11 @@ function runDiagnostics() {
     setTimeout(() => {
         btn.innerHTML = originalContent;
         btn.disabled = false;
-        
+
         if (typeof feather !== 'undefined') {
             feather.replace();
         }
-        
+
         showNotification('Diagnostics complete. All systems operational.', 'success');
     }, 3000);
 }
@@ -357,7 +390,7 @@ function showNotification(message, type = 'info') {
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
-    
+
     // Find or create flash messages container
     let container = document.querySelector('.flash-messages');
     if (!container) {
@@ -365,9 +398,9 @@ function showNotification(message, type = 'info') {
         container.className = 'flash-messages';
         document.body.appendChild(container);
     }
-    
+
     container.appendChild(notification);
-    
+
     // Auto-remove after 5 seconds
     setTimeout(() => {
         if (notification.parentNode) {
@@ -418,16 +451,16 @@ function handleFormSubmission(form) {
     const formData = new FormData(form);
     const submitBtn = form.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerHTML;
-    
+
     submitBtn.innerHTML = '<i data-feather="loader"></i> Saving...';
     submitBtn.disabled = true;
-    
+
     // Simulate form submission
     setTimeout(() => {
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
         showNotification('Form submitted successfully!', 'success');
-        
+
         if (typeof feather !== 'undefined') {
             feather.replace();
         }
@@ -461,7 +494,7 @@ document.addEventListener('keydown', function(e) {
             searchInput.focus();
         }
     }
-    
+
     // Escape to close modals or clear search
     if (e.key === 'Escape') {
         const searchInputs = document.querySelectorAll('.search-input, #userSearch, #itemSearch');

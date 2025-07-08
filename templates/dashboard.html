@@ -5,29 +5,29 @@
 {% block content %}
 <div class="dashboard-container">
     <!-- Sidebar -->
-    <nav class="sidebar">
+    <nav class="sidebar" id="mobileSidebar">
         <div class="sidebar-header">
             <h2>Victor's Menu</h2>
         </div>
         
         <div class="sidebar-nav">
-            <a href="#overview" class="nav-item active" data-section="overview">
+            <a href="#overview" class="nav-item active" data-section="overview" onclick="closeMobileSidebar()">
                 <i data-feather="home"></i>
                 <span>Overview</span>
             </a>
-            <a href="#users" class="nav-item" data-section="users">
+            <a href="#users" class="nav-item" data-section="users" onclick="closeMobileSidebar()">
                 <i data-feather="users"></i>
                 <span>Users</span>
             </a>
-            <a href="#marketplace" class="nav-item" data-section="marketplace">
+            <a href="#marketplace" class="nav-item" data-section="marketplace" onclick="closeMobileSidebar()">
                 <i data-feather="shopping-bag"></i>
                 <span>Marketplace</span>
             </a>
-            <a href="#analytics" class="nav-item" data-section="analytics">
+            <a href="#analytics" class="nav-item" data-section="analytics" onclick="closeMobileSidebar()">
                 <i data-feather="bar-chart-3"></i>
                 <span>Analytics</span>
             </a>
-            <a href="#settings" class="nav-item" data-section="settings">
+            <a href="#settings" class="nav-item" data-section="settings" onclick="closeMobileSidebar()">
                 <i data-feather="settings"></i>
                 <span>Settings</span>
             </a>
