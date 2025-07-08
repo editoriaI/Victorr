@@ -48,8 +48,8 @@ class VerificationCog(commands.Cog):
                     await interaction.followup.send(embed=embed, ephemeral=True)
                     return
             
-            # Check if Highrise username is already taken
-            existing_user = await self.bot.db.get_user_by_highrise_username(highrise_username)
+            # Check if Highrise username is already taken (case-insensitive)
+            existing_user = await self.bot.db.get_user_by_highrise_username_case_insensitive(highrise_username)
             if existing_user and existing_user['id'] != user_id:
                 embed = discord.Embed(
                     title="❌ Username Taken",
@@ -59,25 +59,28 @@ class VerificationCog(commands.Cog):
                 await interaction.followup.send(embed=embed, ephemeral=True)
                 return
             
-            # Verify Highrise username exists
+            # Verify Highrise username exists (case-insensitive search)
             highrise_user = await self._get_highrise_user(highrise_username)
             if not highrise_user:
                 embed = discord.Embed(
                     title="❌ User Not Found",
-                    description=f"Could not find Highrise user `{highrise_username}`. Please check the spelling.",
+                    description=f"Could not find Highrise user `{highrise_username}`. Please check the spelling and try again.",
                     color=0xFF0000
                 )
                 await interaction.followup.send(embed=embed, ephemeral=True)
                 return
             
+            # Use the exact username from Highrise API response
+            exact_username = highrise_user.get('username') or highrise_user.get('user', {}).get('username') or highrise_username
+            
             # Generate verification code
             verification_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
             
-            # Update user with verification details
+            # Update user with verification details using exact username
             await self.bot.db.update_user_verification(
                 user_id, 
-                highrise_username, 
-                str(highrise_user.get('user_id', '')),
+                exact_username, 
+                str(highrise_user.get('user_id', '') or highrise_user.get('user', {}).get('user_id', '')),
                 verification_code
             )
             
@@ -145,7 +148,7 @@ class VerificationCog(commands.Cog):
                 await interaction.followup.send(embed=embed, ephemeral=True)
                 return
             
-            # Check bio for verification code
+            # Check bio for verification code with detailed logging
             highrise_user = await self._get_highrise_user(user_data['highrise_username'])
             if not highrise_user:
                 embed = discord.Embed(
@@ -156,11 +159,41 @@ class VerificationCog(commands.Cog):
                 await interaction.followup.send(embed=embed, ephemeral=True)
                 return
             
-            bio = highrise_user.get('bio', '')
-            verification_code = user_data['verification_code']
+            # Extract bio from various possible fields
+            bio = ""
+            possible_bio_fields = ['bio', 'description', 'about', 'profile_description', 'user_bio']
             
-            if verification_code in bio:
-                # Verification successful
+            for field in possible_bio_fields:
+                if field in highrise_user and highrise_user[field]:
+                    bio = str(highrise_user[field])
+                    logger.info(f"Found bio in field '{field}': {bio[:100]}...")
+                    break
+            
+            # Also check nested user data
+            if not bio and 'user' in highrise_user:
+                user_obj = highrise_user['user']
+                for field in possible_bio_fields:
+                    if field in user_obj and user_obj[field]:
+                        bio = str(user_obj[field])
+                        logger.info(f"Found bio in user.{field}: {bio[:100]}...")
+                        break
+            
+            verification_code = user_data['verification_code']
+            logger.info(f"Looking for verification code '{verification_code}' in bio: '{bio}'")
+            
+            # Check for verification code (case-insensitive and flexible)
+            code_found = (
+                verification_code.upper() in bio.upper() or
+                verification_code.lower() in bio.lower() or
+                verification_code in bio
+            )
+            
+            if code_found:
+                # Verification successful - update username to match Highrise exactly
+                actual_username = highrise_user.get('username') or highrise_user.get('user', {}).get('username')
+                if actual_username:
+                    await self.bot.db.update_user_highrise_username(user_data['id'], actual_username)
+                
                 await self.bot.db.verify_user(user_data['id'])
                 
                 embed = discord.Embed(
@@ -168,22 +201,37 @@ class VerificationCog(commands.Cog):
                     description=(
                         f"Congratulations! Your account has been verified.\n\n"
                         f"**Discord:** {interaction.user.mention}\n"
-                        f"**Highrise:** `{user_data['highrise_username']}`\n\n"
+                        f"**Highrise:** `{actual_username or user_data['highrise_username']}`\n\n"
                         f"You can now use all marketplace features!"
                     ),
                     color=0x00FF00
                 )
                 await interaction.followup.send(embed=embed, ephemeral=True)
-                logger.info(f"User {interaction.user} verified as {user_data['highrise_username']}")
+                logger.info(f"User {interaction.user} verified as {actual_username or user_data['highrise_username']}")
+                
+                # Update Discord nickname to match Highrise username
+                try:
+                    if actual_username and interaction.guild:
+                        await interaction.user.edit(nick=actual_username)
+                        logger.info(f"Updated Discord nickname to {actual_username}")
+                except discord.Forbidden:
+                    logger.warning(f"Could not update nickname for {interaction.user} - insufficient permissions")
+                except Exception as e:
+                    logger.error(f"Error updating nickname: {e}")
+                    
             else:
+                # Enhanced error message with bio debugging info
+                bio_preview = bio[:200] + "..." if len(bio) > 200 else bio
                 embed = discord.Embed(
                     title="❌ Code Not Found",
                     description=(
                         f"The verification code `{verification_code}` was not found in your bio.\n\n"
+                        f"**Current bio content:** {bio_preview if bio else 'No bio found'}\n\n"
                         f"Please make sure you:\n"
-                        f"1. Added the code to your Highrise bio\n"
-                        f"2. Saved your bio changes\n"
-                        f"3. Wait a few minutes for the changes to update"
+                        f"1. Added the exact code `{verification_code}` to your Highrise bio\n"
+                        f"2. Saved your bio changes in the Highrise app\n"
+                        f"3. Wait 2-3 minutes for changes to sync\n"
+                        f"4. Try again with `/check`"
                     ),
                     color=0xFF0000
                 )

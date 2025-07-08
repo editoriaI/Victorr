@@ -17,28 +17,80 @@ class HighriseAPI:
     
     @classmethod
     async def get_user_by_username(cls, username: str) -> Optional[Dict[str, Any]]:
-        """Get user data by username"""
+        """Get user data by username with bio information"""
         try:
-            url = f"{cls.BASE_URL}/users"
-            params = {"username": username}
+            # First, search for the user (case-insensitive)
+            search_url = f"{cls.BASE_URL}/users"
+            search_params = {"username": username.lower()}
             headers = {
                 'User-Agent': 'Victor-Discord-Bot/1.0',
                 'Accept': 'application/json'
             }
             
             async with aiohttp.ClientSession() as session:
-                async with session.get(url, params=params, headers=headers, 
-                                     timeout=aiohttp.ClientTimeout(total=10)) as response:
+                # Search for user
+                async with session.get(search_url, params=search_params, headers=headers, 
+                                     timeout=aiohttp.ClientTimeout(total=15)) as response:
                     if response.status == 200:
                         data = await response.json()
                         if 'users' in data and data['users']:
-                            return data['users'][0]
+                            # Find exact match (case-insensitive)
+                            for user in data['users']:
+                                if user.get('username', '').lower() == username.lower():
+                                    user_id = user.get('user_id')
+                                    if user_id:
+                                        # Now get full profile with bio
+                                        return await cls._get_user_profile_with_bio(user_id, session, headers)
                     
-                    logger.warning(f"Failed to get user {username}: Status {response.status}")
+                    logger.warning(f"User {username} not found in search results")
                     return None
                     
         except Exception as e:
             logger.error(f"Error getting Highrise user {username}: {e}")
+            return None
+    
+    @classmethod
+    async def _get_user_profile_with_bio(cls, user_id: str, session: aiohttp.ClientSession, headers: dict) -> Optional[Dict[str, Any]]:
+        """Get user profile with bio data"""
+        try:
+            # Try the profile endpoint for bio data
+            profile_url = f"{cls.BASE_URL}/users/{user_id}"
+            async with session.get(profile_url, headers=headers, 
+                                 timeout=aiohttp.ClientTimeout(total=15)) as response:
+                if response.status == 200:
+                    profile_data = await response.json()
+                    logger.info(f"Successfully retrieved profile for user {user_id}")
+                    return profile_data
+                else:
+                    logger.warning(f"Failed to get profile for user {user_id}: Status {response.status}")
+            
+            # If profile endpoint doesn't work, try alternative endpoints
+            alt_endpoints = [
+                f"{cls.BASE_URL}/users/{user_id}/profile",
+                f"{cls.BASE_URL}/users/{user_id}/info",
+                f"{cls.BASE_URL}/user/{user_id}",
+                f"{cls.BASE_URL}/profile/{user_id}"
+            ]
+            
+            for endpoint in alt_endpoints:
+                try:
+                    async with session.get(endpoint, headers=headers, 
+                                         timeout=aiohttp.ClientTimeout(total=10)) as response:
+                        if response.status == 200:
+                            data = await response.json()
+                            logger.info(f"Successfully retrieved data from {endpoint}")
+                            return data
+                        else:
+                            logger.debug(f"Endpoint {endpoint} returned status {response.status}")
+                except Exception as e:
+                    logger.debug(f"Error trying endpoint {endpoint}: {e}")
+                    continue
+            
+            logger.warning(f"Could not retrieve bio data for user {user_id}")
+            return None
+            
+        except Exception as e:
+            logger.error(f"Error getting user profile with bio: {e}")
             return None
     
     @classmethod

@@ -158,6 +158,34 @@ class DatabaseManager:
             logger.error(f"Error getting user by Highrise username: {e}")
             return None
     
+    async def get_user_by_highrise_username_case_insensitive(self, username: str) -> Optional[Dict[str, Any]]:
+        """Get user by Highrise username (case-insensitive)"""
+        try:
+            cursor = await self.connection.execute(
+                "SELECT * FROM users WHERE LOWER(highrise_username) = LOWER(?)", (username,)
+            )
+            row = await cursor.fetchone()
+            if row:
+                columns = [description[0] for description in cursor.description]
+                return dict(zip(columns, row))
+            return None
+        except Exception as e:
+            logger.error(f"Error getting user by Highrise username (case-insensitive): {e}")
+            return None
+    
+    async def update_user_highrise_username(self, user_id: int, username: str) -> bool:
+        """Update user's Highrise username"""
+        try:
+            await self.connection.execute(
+                "UPDATE users SET highrise_username = ? WHERE id = ?",
+                (username, user_id)
+            )
+            await self.connection.commit()
+            return True
+        except Exception as e:
+            logger.error(f"Error updating user Highrise username: {e}")
+            return False
+    
     async def update_user_verification(self, user_id: int, highrise_username: str, 
                                      highrise_user_id: str, verification_code: str) -> bool:
         """Update user verification details"""
