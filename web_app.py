@@ -16,7 +16,7 @@ from models import User, AdminUser, Listing, Transaction, ActivityLog, UserStatu
 # Discord OAuth2 Configuration
 DISCORD_CLIENT_ID = os.getenv('DISCORD_CLIENT_ID', '1234567890')
 DISCORD_CLIENT_SECRET = os.getenv('DISCORD_CLIENT_SECRET', 'your_client_secret')
-DISCORD_REDIRECT_URI = os.getenv('DISCORD_REDIRECT_URI', 'https://victor-discord-bot.repl.co/auth/discord/callback')
+DISCORD_REDIRECT_URI = os.getenv('DISCORD_REDIRECT_URI', f'https://{os.getenv("REPLIT_DEV_DOMAIN", "localhost:5000")}/auth/discord/callback')
 DISCORD_BOT_TOKEN = os.getenv('DISCORD_BOT_TOKEN', '')
 
 # Discord API endpoints
