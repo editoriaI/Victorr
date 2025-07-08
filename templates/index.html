@@ -160,6 +160,7 @@
     bottom: 0;
     background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><circle cx="200" cy="200" r="2" fill="rgba(255,95,162,0.1)"/><circle cx="800" cy="300" r="2" fill="rgba(161,161,161,0.1)"/><circle cx="400" cy="600" r="2" fill="rgba(255,95,162,0.1)"/><circle cx="900" cy="700" r="2" fill="rgba(161,161,161,0.1)"/></svg>');
     animation: float 20s ease-in-out infinite;
+    pointer-events: none;
 }
 
 @keyframes float {
@@ -399,6 +400,18 @@
 .button-group a, .cta-buttons a {
     pointer-events: auto;
     cursor: pointer;
+    position: relative;
+    z-index: 20;
+}
+
+.hero-actions {
+    position: relative;
+    z-index: 20;
+}
+
+.hero-actions a {
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 @media (max-width: 768px) {
@@ -493,4 +506,37 @@
 {% endblock %}
 
 {% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Feather icons
+    if (typeof feather !== 'undefined') {
+        feather.replace();
+    }
+    
+    // Fix button click handlers
+    const buttons = document.querySelectorAll('.btn, .cta-buttons a, .hero-actions a');
+    buttons.forEach(button => {
+        button.style.pointerEvents = 'auto';
+        button.style.cursor = 'pointer';
+    });
+    
+    // Ensure all links work properly
+    const authLinks = document.querySelectorAll('a[href*="discord_auth"], a[href*="dashboard"]');
+    authLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            // Allow default navigation
+            console.log('Button clicked:', this.href);
+        });
+    });
+    
+    // Add to server button
+    const addToServerBtn = document.querySelector('a[href*="discord.com/oauth2/authorize"]');
+    if (addToServerBtn) {
+        addToServerBtn.addEventListener('click', function(e) {
+            // Allow default navigation to Discord
+            console.log('Add to server clicked');
+        });
+    }
+});
+</script>
 {% endblock %}
