@@ -426,6 +426,7 @@
 .login-section {
     text-align: center;
     margin-top: 1rem;
+    width: 100%;
 }
 
 .login-question {
@@ -455,6 +456,15 @@
         font-size: 2.5rem;
     }
     
+    .hero-subtitle {
+        font-size: 1.2rem;
+    }
+    
+    .hero-description {
+        font-size: 1rem;
+        padding: 0 1rem;
+    }
+    
     .victor-image {
         width: 200px;
         height: 200px;
@@ -462,6 +472,71 @@
     
     .floating-card {
         display: none;
+    }
+    
+    .button-group {
+        flex-direction: column;
+        gap: 0.75rem;
+        width: 100%;
+        padding: 0 1rem;
+    }
+    
+    .button-group a {
+        width: 100%;
+        max-width: 280px;
+        margin: 0;
+        text-align: center;
+    }
+    
+    .login-question {
+        font-size: 1rem;
+        padding: 0 1rem;
+    }
+    
+    .hero-stats {
+        margin-top: 2rem;
+    }
+    
+    .hero-stats .col-4 {
+        margin-bottom: 1rem;
+    }
+    
+    .feature-card {
+        margin-bottom: 2rem;
+    }
+    
+    .cta-title {
+        font-size: 2rem;
+    }
+    
+    .cta-description {
+        font-size: 1rem;
+        padding: 0 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.1rem;
+    }
+    
+    .victor-image {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .button-group a {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.95rem;
+    }
+    
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
     }
 }
 </style>
