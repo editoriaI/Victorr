@@ -200,23 +200,8 @@ class VerificationCog(commands.Cog):
     
     async def _get_highrise_user(self, username: str) -> Optional[dict]:
         """Get Highrise user data from API"""
-        try:
-            url = f"https://webapi.highrise.game/users?username={username}"
-            headers = {
-                'User-Agent': 'Victor-Discord-Bot/1.0',
-                'Accept': 'application/json'
-            }
-            
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as response:
-                    if response.status == 200:
-                        data = await response.json()
-                        if 'users' in data and data['users']:
-                            return data['users'][0]
-            return None
-        except Exception as e:
-            logger.error(f"Error getting Highrise user {username}: {e}")
-            return None
+        from bot.utils import HighriseAPI
+        return await HighriseAPI.get_user_by_username(username)
 
 class MarketplaceCog(commands.Cog):
     """Marketplace commands"""
