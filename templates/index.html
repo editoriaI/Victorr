@@ -462,17 +462,11 @@
 
 {% block scripts %}
 <script>
-// Handle access dashboard buttons
+// Initialize Feather icons when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    const accessButtons = document.querySelectorAll('#accessDashboard, #ctaAccessDashboard');
-    accessButtons.forEach(button => {
-        if (button) {
-            button.addEventListener('click', function(e) {
-                e.preventDefault();
-                window.location.href = '/auth/discord';
-            });
-        }
-    });
+    if (typeof feather !== 'undefined') {
+        feather.replace();
+    }
 });
 </script>
 {% endblock %}
