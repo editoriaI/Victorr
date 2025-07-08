@@ -426,6 +426,133 @@ class MarketplaceCog(commands.Cog):
                 color=0xFF0000
             )
             await interaction.followup.send(embed=embed, ephemeral=True)
+    
+    @app_commands.command(name="sell_gold", description="Sell gold on the marketplace")
+    async def sell_gold(self, interaction: discord.Interaction, amount: int, price_per_gold: int):
+        """Sell a specified amount of gold"""
+        await interaction.response.defer(ephemeral=True)
+        
+        try:
+            # Check if user is verified
+            user_data = await self.bot.db.get_user_by_discord_id(str(interaction.user.id))
+            
+            if not user_data or user_data['status'] != 'verified':
+                embed = discord.Embed(
+                    title="❌ Verification Required",
+                    description="You must be verified to create marketplace listings. Use `/verify` to get started.",
+                    color=0xFF0000
+                )
+                await interaction.followup.send(embed=embed, ephemeral=True)
+                return
+            
+            if amount <= 0 or price_per_gold <= 0:
+                embed = discord.Embed(
+                    title="❌ Invalid Amount/Price",
+                    description="Amount and price per gold must be greater than 0.",
+                    color=0xFF0000
+                )
+                await interaction.followup.send(embed=embed, ephemeral=True)
+                return
+            
+            total_price = amount * price_per_gold
+            
+            # Create gold listing
+            listing_id = await self.bot.db.create_listing(
+                user_data['id'], 
+                f"{amount:,} Gold", 
+                "Gold", 
+                total_price,
+                f"{amount:,} gold at {price_per_gold} coins per gold",
+                "Discord DM"
+            )
+            
+            embed = discord.Embed(
+                title="🪙 Gold Listed Successfully",
+                description=(
+                    f"Your gold has been listed in the marketplace!\n\n"
+                    f"**Amount:** {amount:,} gold\n"
+                    f"**Price per gold:** {price_per_gold:,} coins\n"
+                    f"**Total price:** {total_price:,} coins\n\n"
+                    f"Listing ID: `{listing_id}`"
+                ),
+                color=0xFFD700
+            )
+            await interaction.followup.send(embed=embed, ephemeral=True)
+            
+            # Send notification to marketplace channel if configured
+            # This would need a channel ID configured in your bot settings
+            logger.info(f"User {interaction.user} listed {amount} gold for {total_price} coins")
+            
+        except Exception as e:
+            logger.error(f"Error in sell_gold command: {e}")
+            embed = discord.Embed(
+                title="❌ Error",
+                description="An error occurred while listing your gold. Please try again later.",
+                color=0xFF0000
+            )
+            await interaction.followup.send(embed=embed, ephemeral=True)
+    
+    @app_commands.command(name="sell_nft", description="Sell an NFT on the marketplace")
+    async def sell_nft(self, interaction: discord.Interaction, nft_name: str, price: int, description: str = ""):
+        """Sell an NFT for a specified price"""
+        await interaction.response.defer(ephemeral=True)
+        
+        try:
+            # Check if user is verified
+            user_data = await self.bot.db.get_user_by_discord_id(str(interaction.user.id))
+            
+            if not user_data or user_data['status'] != 'verified':
+                embed = discord.Embed(
+                    title="❌ Verification Required",
+                    description="You must be verified to create marketplace listings. Use `/verify` to get started.",
+                    color=0xFF0000
+                )
+                await interaction.followup.send(embed=embed, ephemeral=True)
+                return
+            
+            if price <= 0:
+                embed = discord.Embed(
+                    title="❌ Invalid Price",
+                    description="Price must be greater than 0 coins.",
+                    color=0xFF0000
+                )
+                await interaction.followup.send(embed=embed, ephemeral=True)
+                return
+            
+            # Create NFT listing
+            listing_id = await self.bot.db.create_listing(
+                user_data['id'],
+                nft_name,
+                "NFT",
+                price,
+                description if description else f"NFT: {nft_name}",
+                "Discord DM"
+            )
+            
+            embed = discord.Embed(
+                title="🎨 NFT Listed Successfully",
+                description=(
+                    f"Your NFT has been listed in the marketplace!\n\n"
+                    f"**NFT Name:** {nft_name}\n"
+                    f"**Price:** {price:,} coins\n"
+                    f"**Description:** {description if description else 'None provided'}\n\n"
+                    f"Listing ID: `{listing_id}`"
+                ),
+                color=0xFF5FA2
+            )
+            await interaction.followup.send(embed=embed, ephemeral=True)
+            
+            # Send notification to marketplace channel if configured
+            logger.info(f"User {interaction.user} listed NFT '{nft_name}' for {price} coins")
+            
+        except Exception as e:
+            logger.error(f"Error in sell_nft command: {e}")
+            embed = discord.Embed(
+                title="❌ Error",
+                description="An error occurred while listing your NFT. Please try again later.",
+                color=0xFF0000
+            )
+            await interaction.followup.send(embed=embed, ephemeral=True)
 
 class AdminCog(commands.Cog):
     """Admin commands"""
@@ -523,6 +650,7 @@ class UtilityCog(commands.Cog):
             name="ℹ️ Other",
             value=(
                 "`/stats` - View bot statistics (admin only)\n"
+                "`/project_overview` - Get project status via DM\n"
                 "`/help` - Show this help message"
             ),
             inline=False
@@ -530,6 +658,94 @@ class UtilityCog(commands.Cog):
         
         embed.set_footer(text="Victor - Your darkness awaits at the web dashboard")
         await interaction.response.send_message(embed=embed)
+    
+    @app_commands.command(name="project_overview", description="Get a detailed project overview via DM")
+    async def project_overview(self, interaction: discord.Interaction):
+        """Send project overview via DM"""
+        await interaction.response.defer(ephemeral=True)
+        
+        try:
+            # Create comprehensive project overview
+            overview_embed = discord.Embed(
+                title="🔮 Victor Bot - Project Overview",
+                description="Complete development status and recommendations",
+                color=0xFF5FA2
+            )
+            
+            overview_embed.add_field(
+                name="✅ Accomplishments",
+                value=(
+                    "• **User Verification System** - Two-step verification with Highrise bio validation\n"
+                    "• **Marketplace Features** - Item listing, browsing, and purchase facilitation\n"
+                    "• **Admin Dashboard** - Flask web interface with real-time analytics\n"
+                    "• **Command System** - Organized cogs with slash commands\n"
+                    "• **Highrise API Integration** - Profile fetching and verification\n"
+                    "• **Database Management** - SQLAlchemy with auto-migration support\n"
+                    "• **24/7 Uptime** - Keep-alive system with health monitoring"
+                ),
+                inline=False
+            )
+            
+            overview_embed.add_field(
+                name="🚀 Recommended Additions",
+                value=(
+                    "• **Gold Trading** - `/sell_gold <amount>` and `/buy_gold` commands\n"
+                    "• **NFT Marketplace** - `/sell_nft <name> <price>` command\n"
+                    "• **Notification System** - Channel alerts for transactions\n"
+                    "• **Verification Notifications** - New user confirmation messages\n"
+                    "• **Enhanced Moderation** - Auto-remove expired listings\n"
+                    "• **User Feedback** - Rating system for transactions"
+                ),
+                inline=False
+            )
+            
+            overview_embed.add_field(
+                name="🎯 Next Steps",
+                value=(
+                    "1. Add gold and NFT trading commands\n"
+                    "2. Implement notification channels\n"
+                    "3. Create verification confirmation system\n"
+                    "4. Add transaction history tracking\n"
+                    "5. Implement user rating system\n"
+                    "6. Consider PostgreSQL migration for scale"
+                ),
+                inline=False
+            )
+            
+            overview_embed.set_footer(text="Victor - Darkness guides development")
+            
+            # Try to send DM
+            try:
+                await interaction.user.send(embed=overview_embed)
+                
+                # Send confirmation
+                confirmation_embed = discord.Embed(
+                    title="📨 Message Sent",
+                    description="Project overview has been sent to your DMs!",
+                    color=0x00FF00
+                )
+                await interaction.followup.send(embed=confirmation_embed, ephemeral=True)
+                
+                logger.info(f"Sent project overview DM to {interaction.user}")
+                
+            except discord.Forbidden:
+                # User has DMs disabled, send here instead
+                fallback_embed = discord.Embed(
+                    title="⚠️ DM Failed",
+                    description="I couldn't send you a DM. Here's the project overview:",
+                    color=0xFFAA00
+                )
+                await interaction.followup.send(embed=fallback_embed, ephemeral=True)
+                await interaction.followup.send(embed=overview_embed, ephemeral=True)
+                
+        except Exception as e:
+            logger.error(f"Error in project_overview command: {e}")
+            embed = discord.Embed(
+                title="❌ Error",
+                description="An error occurred while generating the project overview.",
+                color=0xFF0000
+            )
+            await interaction.followup.send(embed=embed, ephemeral=True)
 
 async def setup_commands(bot):
     """Setup all command cogs"""
