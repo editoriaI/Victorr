@@ -26,7 +26,7 @@ class User(db.Model):
     highrise_username = db.Column(db.String(100), unique=True, nullable=True)
     highrise_user_id = db.Column(db.String(50), unique=True, nullable=True)
     verification_code = db.Column(db.String(10), nullable=True)
-    status = db.Column(db.Enum(UserStatus), default=UserStatus.PENDING, nullable=False)
+    status = db.Column(db.String(20), default='pending', nullable=False)  # Use string to match bot database
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     verified_at = db.Column(db.DateTime, nullable=True)
     last_activity = db.Column(db.DateTime, default=datetime.utcnow)
@@ -65,7 +65,7 @@ class Listing(db.Model):
     price = db.Column(db.Integer, nullable=False)  # Price in coins
     description = db.Column(db.Text, nullable=True)
     contact_method = db.Column(db.String(200), nullable=False)  # Discord, Highrise, etc.
-    status = db.Column(db.Enum(ListingStatus), default=ListingStatus.ACTIVE, nullable=False)
+    status = db.Column(db.String(20), default='active', nullable=False)  # Use string instead of enum to match bot
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     expires_at = db.Column(db.DateTime, nullable=True)

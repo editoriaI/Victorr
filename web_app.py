@@ -168,8 +168,8 @@ def dashboard():
     try:
         # Get statistics
         total_users = User.query.count()
-        verified_users = User.query.filter_by(status=UserStatus.VERIFIED).count()
-        active_listings = Listing.query.filter_by(status=ListingStatus.ACTIVE).count()
+        verified_users = User.query.filter_by(status='verified').count()
+        active_listings = Listing.query.filter_by(status='active').count()
         total_transactions = Transaction.query.count()
         
         # Get recent activity
@@ -248,8 +248,8 @@ def api_stats():
     try:
         stats = {
             'total_users': User.query.count(),
-            'verified_users': User.query.filter_by(status=UserStatus.VERIFIED).count(),
-            'active_listings': Listing.query.filter_by(status=ListingStatus.ACTIVE).count(),
+            'verified_users': User.query.filter_by(status='verified').count(),
+            'active_listings': Listing.query.filter_by(status='active').count(),
             'total_transactions': Transaction.query.count()
         }
         return jsonify(stats)
