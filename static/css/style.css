@@ -804,6 +804,34 @@ body.victor-theme {
     color: var(--text-primary);
 }
 
+/* Discord Banner */
+.discord-banner {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.discord-banner-image {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .discord-banner-image {
+        max-height: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .discord-banner-image {
+        max-height: 150px;
+    }
+}
+
 .hero-section {
     background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
     padding: 4rem 0;
