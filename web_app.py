@@ -41,7 +41,7 @@ def log_activity(action, details=None, user_id=None):
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # Create activity_logs table if it doesn't exist
+        # Create activity_logs table if it doesn't exist (simplified version)
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS activity_logs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -50,53 +50,36 @@ def log_activity(action, details=None, user_id=None):
                 details TEXT,
                 ip_address TEXT,
                 user_agent TEXT,
-                endpoint TEXT,
-                method TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
         
         cursor.execute(
-            "INSERT INTO activity_logs (user_id, action, details, ip_address, user_agent, endpoint, method, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO activity_logs (user_id, action, details, ip_address, user_agent, created_at) VALUES (?, ?, ?, ?, ?, ?)",
             (user_id, action, str(details) if details else None, request.remote_addr, 
-             request.headers.get('User-Agent'), request.endpoint, request.method, datetime.now())
+             request.headers.get('User-Agent'), datetime.now())
         )
         conn.commit()
         conn.close()
         
         # Also log to console for real-time monitoring
-        logger.info(f"User Activity: {action} | User: {user_id or 'Anonymous'} | IP: {request.remote_addr} | Endpoint: {request.endpoint}")
+        logger.info(f"User Activity: {action} | User: {user_id or 'Anonymous'} | IP: {request.remote_addr}")
         
     except Exception as e:
         logger.error(f"Error logging activity: {e}")
 
 def require_auth(f):
-    """Decorator to require authentication"""
+    """Decorator to require authentication - now optional"""
     def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            return redirect(url_for('login'))
+        # No authentication required - allow all access
         return f(*args, **kwargs)
     decorated_function.__name__ = f.__name__
     return decorated_function
 
 def require_verified_user(f):
-    """Decorator to require verified user"""
+    """Decorator to require verified user - now optional"""
     def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            return redirect(url_for('login'))
-        
-        # Check if user is verified (unless admin)
-        if not session.get('is_admin', False):
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            cursor.execute("SELECT status FROM users WHERE discord_id = ?", (session.get('discord_id'),))
-            user = cursor.fetchone()
-            conn.close()
-            
-            if not user or user[0] != 'verified':
-                flash('You must be a verified member to access this area', 'error')
-                return redirect(url_for('verify'))
-        
+        # No verification required - allow all access
         return f(*args, **kwargs)
     decorated_function.__name__ = f.__name__
     return decorated_function
@@ -108,25 +91,22 @@ def log_request():
     if not request.endpoint or request.endpoint == 'static':
         return
     
-    user_id = session.get('user_id')
-    discord_id = session.get('discord_id')
-    username = session.get('username', 'Anonymous')
-    
+    # Log as anonymous user
     log_activity(
         f"page_visit_{request.endpoint}", 
         {
             'method': request.method,
             'args': dict(request.args),
             'form_data': dict(request.form) if request.form else None,
-            'username': username
+            'username': 'Anonymous'
         }, 
-        user_id or discord_id
+        'anonymous'
     )
 
 @app.route('/')
 def index():
-    """Landing page"""
-    return render_template('index.html', discord_client_id=DISCORD_CLIENT_ID)
+    """Landing page - redirect to dashboard"""
+    return redirect(url_for('dashboard'))
 
 @app.route('/login')
 def login():
@@ -265,13 +245,8 @@ def discord_callback():
         return redirect(url_for('login'))
 
 @app.route('/dashboard')
-@require_auth
 def dashboard():
-    """Admin dashboard - only accessible to admins"""
-    if not session.get('is_admin'):
-        flash('Access denied. Admin privileges required.', 'error')
-        return redirect(url_for('member_portal'))
-    
+    """Admin dashboard - now accessible to all"""
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -302,15 +277,23 @@ def dashboard():
             'total_transactions': 0
         }
         
+        # Create a mock session for template compatibility
+        mock_session = {
+            'username': 'Victor Admin',
+            'is_admin': True,
+            'user_id': 'admin'
+        }
+        
         return render_template('dashboard.html', 
                              stats=stats,
                              recent_users=recent_users,
-                             recent_listings=recent_listings)
+                             recent_listings=recent_listings,
+                             session=mock_session)
                              
     except Exception as e:
         logger.error(f"Error loading dashboard: {e}")
         flash(f'Error loading dashboard: {str(e)}', 'error')
-        return render_template('dashboard.html', stats={})
+        return render_template('dashboard.html', stats={}, session={'username': 'Victor Admin'})
 
 @app.route('/member-portal')
 @require_verified_user
@@ -449,9 +432,8 @@ def marketplace():
         return render_template('marketplace.html', listings=[])
 
 @app.route('/api/stats')
-@require_auth
 def api_stats():
-    """API endpoint for dashboard statistics"""
+    """API endpoint for dashboard statistics - now public"""
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
