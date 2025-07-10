@@ -466,6 +466,140 @@ Features:
 
         await interaction.response.send_message(overview_text)
 
+    @app_commands.command(name="send_channel_info", description="Send information embeds to all channels")
+    @app_commands.checks.has_role("owner of this house")
+    async def send_channel_info(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+
+        channel_info = {
+            "rules": {
+                "title": "📜 Server Rules",
+                "description": "React with ✅ to accept the rules and gain access to the server. Please read all rules carefully before proceeding.",
+                "color": 0x8B0000
+            },
+            "announcements": {
+                "title": "📢 Server Announcements",
+                "description": "Important server updates, events, and announcements will be posted here. Stay informed!",
+                "color": 0xFF5FA2
+            },
+            "new-user-verification": {
+                "title": "✅ New User Verification Log",
+                "description": "This channel logs all new user verifications. Admins can monitor verification activity here.",
+                "color": 0x00FF00
+            },
+            "item-sales": {
+                "title": "🛍️ Item Sales",
+                "description": "List your Highrise items for sale here using `/sell item`. Include item name, price, and description.",
+                "color": 0x8B0000
+            },
+            "gold-sales": {
+                "title": "💰 Gold Sales",
+                "description": "Sell your Highrise gold here using `/sell gold`. Specify amount and total price for transparency.",
+                "color": 0xFFD700
+            },
+            "nft-sales": {
+                "title": "🎨 NFT Sales",
+                "description": "Trade your Highrise NFTs here using `/sell nft`. Include NFT name, rarity, and asking price.",
+                "color": 0x9370DB
+            },
+            "sold-alerts": {
+                "title": "🎯 Sold Alerts",
+                "description": "Automated notifications when items are marked as sold. Helps track marketplace activity.",
+                "color": 0x32CD32
+            },
+            "wishlist-requests": {
+                "title": "🔍 Wishlist & Requests",
+                "description": "Looking for specific items? Post your wishlist and requests here. Other users can help you find what you need!",
+                "color": 0xFF69B4
+            },
+            "interest-pings": {
+                "title": "📩 Interest Notifications",
+                "description": "When someone shows interest in your listing, notifications appear here for quick seller response.",
+                "color": 0x40E0D0
+            },
+            "art-showcase": {
+                "title": "🎨 Art Showcase",
+                "description": "Share your Highrise screenshots, outfits, room designs, and artistic creations here!",
+                "color": 0xFF6347
+            },
+            "pets": {
+                "title": "🐾 Pet Corner",
+                "description": "Show off your real pets or Highrise pets! Share cute photos and pet stories.",
+                "color": 0x98FB98
+            },
+            "selfies": {
+                "title": "📸 Selfies & Photos",
+                "description": "Share your selfies, photos, and personal moments with the community!",
+                "color": 0xFFB6C1
+            },
+            "memes": {
+                "title": "😂 Memes & Humor",
+                "description": "Share funny memes, jokes, and humorous content to brighten everyone's day!",
+                "color": 0xFFA500
+            },
+            "venting-zone": {
+                "title": "💭 Venting Zone",
+                "description": "Need to get something off your chest? This is a safe space for venting and emotional support.",
+                "color": 0x6495ED
+            },
+            "mod-alerts": {
+                "title": "🚨 Moderation Alerts",
+                "description": "Automated moderation alerts and admin notifications. Staff-only channel for server management.",
+                "color": 0xFF0000
+            },
+            "flagged-listings": {
+                "title": "⚠️ Flagged Listings",
+                "description": "Suspicious or reported marketplace listings are reviewed here by moderation staff.",
+                "color": 0xFF4500
+            },
+            "logs": {
+                "title": "📋 Server Logs",
+                "description": "Comprehensive server activity logs including joins, leaves, role changes, and other events.",
+                "color": 0x808080
+            },
+            "giveaway": {
+                "title": "🎉 Giveaways",
+                "description": "Participate in server giveaways! React to giveaway posts to enter. Good luck!",
+                "color": 0x00CED1
+            },
+            "price-checks": {
+                "title": "💎 Price Checks",
+                "description": "Unsure about item values? Ask for price checks here to get community input on fair pricing.",
+                "color": 0x4169E1
+            },
+            "victors-vault": {
+                "title": "🏛️ Victor's Vault",
+                "description": "Exclusive access channel for trusted members, staff, and VIPs. Private discussions and premium features.",
+                "color": 0x8B0000
+            }
+        }
+
+        sent_count = 0
+        guild = interaction.guild
+
+        for channel in guild.text_channels:
+            if channel.name in channel_info:
+                info = channel_info[channel.name]
+                
+                embed = discord.Embed(
+                    title=info["title"],
+                    description=info["description"],
+                    color=info["color"],
+                    timestamp=datetime.utcnow()
+                )
+                embed.set_footer(text="Victor's Channel Guide", icon_url="https://cdn.discordapp.com/emojis/1234567890123456789.png")
+
+                try:
+                    await channel.send(embed=embed)
+                    sent_count += 1
+                    logger.info(f"Sent info embed to #{channel.name}")
+                except Exception as e:
+                    logger.error(f"Failed to send embed to #{channel.name}: {e}")
+
+        await interaction.followup.send(f"✅ Sent information embeds to {sent_count} channels!")
+
+        logger.info(f"Channel info embeds deployment complete: {sent_count} channels updated")
+
 class ReactionRoleCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot

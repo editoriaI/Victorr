@@ -96,6 +96,7 @@ class VictorBot(commands.Bot):
 
         self.db = None
         self.startup_complete = False
+        self.rules_message_id = 1386385550965215404
 
     async def setup_hook(self):
         """Initialize bot components"""
@@ -182,6 +183,29 @@ class VictorBot(commands.Bot):
                 await guild.system_channel.send(embed=embed)
             except discord.Forbidden:
                 logger.warning(f"Could not send welcome message to {guild.name}")
+
+    async def on_raw_reaction_add(self, payload):
+        """Handle reactions to rules message"""
+        if payload.user_id == self.user.id:
+            return
+
+        guild = self.get_guild(payload.guild_id)
+        if not guild:
+            return
+
+        member = guild.get_member(payload.user_id)
+        if not member or member.bot:
+            return
+
+        # Handle rules message reactions
+        if payload.message_id == self.rules_message_id and str(payload.emoji) == "✅":
+            rules_accepted_role = discord.utils.get(guild.roles, name="Rules Accepted")
+            if rules_accepted_role and rules_accepted_role not in member.roles:
+                try:
+                    await member.add_roles(rules_accepted_role)
+                    logger.info(f"Assigned Rules Accepted role to {member}")
+                except Exception as e:
+                    logger.error(f"Error assigning Rules Accepted role: {e}")
 
     async def on_command_error(self, ctx, error):
         """Global error handler"""
