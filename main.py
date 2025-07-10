@@ -41,52 +41,55 @@ logger = logging.getLogger(__name__)
 
 class VictorBot(commands.Bot):
     """Victor - The Discord Bot for Highrise Trading"""
-    
+
     def __init__(self):
         intents = discord.Intents.default()
         intents.message_content = True
         intents.members = True
         intents.guilds = True
-        
+
         super().__init__(
             command_prefix='!',
             intents=intents,
             help_command=None,
             description="Victor - Your Highrise Trading Assistant"
         )
-        
+
         self.db = None
         self.startup_complete = False
-        
+
     async def setup_hook(self):
         """Initialize bot components"""
         logger.info("Setting up bot...")
-        
+
         try:
             # Initialize database
             self.db = DatabaseManager()
             await self.db.initialize()
             logger.info("Database initialized successfully")
-            
+
             # Setup commands
             await setup_commands(self)
             logger.info("All command cogs loaded successfully")
-            
+
+            # Add persistent views for marketplace buttons
+            bot.add_view(SellView(None, None, None))
+
             # Sync commands
             logger.info("Starting command sync...")
             synced = await self.tree.sync()
             logger.info(f"Synced {len(synced)} command(s)")
-            
+
         except Exception as e:
             logger.error(f"Error during bot setup: {e}")
             raise
-    
+
     async def on_ready(self):
         """Bot ready event"""
         logger.info(f"{self.user} has connected to Discord!")
         logger.info(f"Bot is in {len(self.guilds)} guilds")
         self.startup_complete = True
-        
+
         # Set presence
         await self.change_presence(
             activity=discord.Activity(
@@ -94,11 +97,11 @@ class VictorBot(commands.Bot):
                 name="the Highrise marketplace"
             )
         )
-    
+
     async def on_guild_join(self, guild):
         """Handle joining a new guild"""
         logger.info(f"Joined new guild: {guild.name} (ID: {guild.id})")
-        
+
         # Send welcome message to system channel if available
         if guild.system_channel:
             embed = discord.Embed(
@@ -114,25 +117,25 @@ class VictorBot(commands.Bot):
                 color=0xFF5FA2
             )
             embed.set_footer(text="Victor - Highrise Trading Bot")
-            
+
             try:
                 await guild.system_channel.send(embed=embed)
             except discord.Forbidden:
                 logger.warning(f"Could not send welcome message to {guild.name}")
-    
+
     async def on_command_error(self, ctx, error):
         """Global error handler"""
         if isinstance(error, commands.CommandNotFound):
             return
-        
+
         logger.error(f"Command error in {ctx.command}: {error}")
-        
+
         embed = discord.Embed(
             title="❌ Error",
             description="Something went wrong. Please try again later.",
             color=0xFF0000
         )
-        
+
         try:
             await ctx.send(embed=embed, ephemeral=True)
         except:
@@ -150,17 +153,17 @@ async def main():
     if not token:
         logger.error("DISCORD_BOT_TOKEN not found in environment variables")
         return
-    
+
     # Setup signal handlers
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
-    
+
     # Start web app in separate thread
     keep_alive()
-    
+
     # Create and run bot
     bot = VictorBot()
-    
+
     try:
         await bot.start(token)
     except KeyboardInterrupt:
