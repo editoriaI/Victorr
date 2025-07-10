@@ -623,40 +623,70 @@ class UtilityCog(commands.Cog):
         """Show help information"""
         embed = discord.Embed(
             title="🔮 Victor's Commands",
-            description="Welcome to the shadows of Highrise trading...",
+            description="Welcome to the shadows of Highrise trading...\n*Your trusted marketplace companion*",
             color=0xFF5FA2
         )
 
         embed.add_field(
-            name="🔐 Verification",
+            name="🔐 Account Verification",
             value=(
                 "`/verify <username>` - Start verification with your Highrise username\n"
-                "`/check` - Check your verification status"
+                "`/check` - Check your verification status\n"
+                "*Required before using marketplace features*"
             ),
             inline=False
         )
 
         embed.add_field(
-            name="🛍️ Marketplace",
+            name="🛍️ General Marketplace",
             value=(
-                "`/sell <item> <category> <price>` - List an item for sale\n"
-                "`/marketplace [search] [category]` - Browse listings\n"
+                "`/sell <item> <category> <price>` - List any item for sale\n"
+                "`/marketplace [search] [category]` - Browse all listings\n"
                 "`/mylistings` - View your active listings"
             ),
             inline=False
         )
 
         embed.add_field(
-            name="ℹ️ Other",
+            name="🪙 Gold Trading",
+            value=(
+                "`/sell_gold <amount> <price_per_gold>` - List gold for sale\n"
+                "*Example: `/sell_gold 1000 50` = 1,000 gold at 50 coins each*"
+            ),
+            inline=False
+        )
+
+        embed.add_field(
+            name="🎨 NFT Trading",
+            value=(
+                "`/sell_nft <name> <price> [description]` - List NFTs for sale\n"
+                "*Example: `/sell_nft \"Rare Avatar\" 10000 \"Limited edition\"`*"
+            ),
+            inline=False
+        )
+
+        embed.add_field(
+            name="ℹ️ Information & Admin",
             value=(
                 "`/stats` - View bot statistics (admin only)\n"
-                "`/project_overview` - Get project status via DM\n"
+                "`/project_overview` - Get detailed project status via DM\n"
                 "`/help` - Show this help message"
             ),
             inline=False
         )
 
-        embed.set_footer(text="Victor - Your darkness awaits at the web dashboard")
+        embed.add_field(
+            name="🌐 Web Dashboard",
+            value=(
+                "Access the full web interface for advanced features:\n"
+                "• User management and analytics\n"
+                "• Detailed marketplace browsing\n"
+                "• Administrative controls"
+            ),
+            inline=False
+        )
+
+        embed.set_footer(text="Victor - Your darkness awaits at the web dashboard • Bot v2.0")
         await interaction.response.send_message(embed=embed)
 
     @app_commands.command(name="project_overview", description="Get a detailed project overview via DM")
