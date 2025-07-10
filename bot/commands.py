@@ -766,6 +766,62 @@ from ..utils import fetch_highrise_profile
 
 logger = logging.getLogger(__name__)
 
+class VerificationView(discord.ui.View):
+    def __init__(self, verification_code: str, highrise_username: str):
+        super().__init__(timeout=300)
+        self.verification_code = verification_code
+        self.highrise_username = highrise_username
+
+    @discord.ui.button(label="Check Bio", style=discord.ButtonStyle.primary, emoji="🔍")
+    async def check_bio(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer(ephemeral=True)
+        
+        try:
+            # Fetch Highrise profile
+            profile_data = await fetch_highrise_profile(self.highrise_username)
+            
+            if not profile_data:
+                embed = discord.Embed(
+                    title="❌ Profile Not Found",
+                    description=f"Could not find Highrise profile for {self.highrise_username}",
+                    color=0xFF0000
+                )
+                await interaction.followup.send(embed=embed, ephemeral=True)
+                return
+            
+            # Check if verification code is in bio
+            bio = profile_data.get('bio', '')
+            if self.verification_code in bio:
+                # Update user as verified
+                user = await get_user_by_discord_id(interaction.user.id)
+                if user:
+                    user.verified = True
+                    user.verified_at = datetime.utcnow()
+                    db.session.commit()
+                
+                embed = discord.Embed(
+                    title="✅ Verification Complete",
+                    description=f"Successfully verified as {self.highrise_username}!",
+                    color=0x00FF00
+                )
+                await interaction.followup.send(embed=embed, ephemeral=True)
+            else:
+                embed = discord.Embed(
+                    title="❌ Code Not Found",
+                    description=f"Verification code `{self.verification_code}` not found in your bio. Please add it and try again.",
+                    color=0xFF0000
+                )
+                await interaction.followup.send(embed=embed, ephemeral=True)
+                
+        except Exception as e:
+            logger.error(f"Error checking bio: {e}")
+            embed = discord.Embed(
+                title="❌ Error",
+                description="An error occurred while checking your bio. Please try again later.",
+                color=0xFF0000
+            )
+            await interaction.followup.send(embed=embed, ephemeral=True)
+
 class BotCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
