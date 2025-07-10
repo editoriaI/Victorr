@@ -31,10 +31,21 @@ class User(db.Model):
     verified_at = db.Column(db.DateTime, nullable=True)
     last_activity = db.Column(db.DateTime, default=datetime.utcnow)
     
+    # New fields for enhanced features
+    reputation_score = db.Column(db.Float, default=0.0)
+    total_trades = db.Column(db.Integer, default=0)
+    bio = db.Column(db.Text, nullable=True)
+    avatar_url = db.Column(db.String(500), nullable=True)
+    is_premium = db.Column(db.Boolean, default=False)
+    referred_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    
     # Relationships
     listings = db.relationship('Listing', backref='seller', lazy=True, cascade='all, delete-orphan')
     transactions_as_buyer = db.relationship('Transaction', foreign_keys='Transaction.buyer_id', backref='buyer', lazy=True)
     transactions_as_seller = db.relationship('Transaction', foreign_keys='Transaction.seller_id', backref='seller', lazy=True)
+    wishlists = db.relationship('Wishlist', backref='user', lazy=True, cascade='all, delete-orphan')
+    reviews_given = db.relationship('Review', foreign_keys='Review.reviewer_id', backref='reviewer', lazy=True)
+    reviews_received = db.relationship('Review', foreign_keys='Review.reviewee_id', backref='reviewee', lazy=True)
     
     def __repr__(self):
         return f'<User {self.discord_username}>'
@@ -69,6 +80,16 @@ class Listing(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     expires_at = db.Column(db.DateTime, nullable=True)
+    
+    # New fields for enhanced features
+    condition = db.Column(db.String(50), default='Good', nullable=False)  # New, Like New, Good, Fair
+    is_featured = db.Column(db.Boolean, default=False)
+    views = db.Column(db.Integer, default=0)
+    favorites = db.Column(db.Integer, default=0)
+    images = db.Column(db.JSON, nullable=True)  # Array of image URLs
+    tags = db.Column(db.JSON, nullable=True)  # Array of searchable tags
+    original_price = db.Column(db.Integer, nullable=True)  # For price history
+    negotiable = db.Column(db.Boolean, default=True)
     
     # Relationships
     transactions = db.relationship('Transaction', backref='listing', lazy=True)
@@ -124,3 +145,81 @@ class ActivityLog(db.Model):
     
     def __repr__(self):
         return f'<ActivityLog {self.action}>'
+
+class Wishlist(db.Model):
+    __tablename__ = 'wishlists'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    item_name = db.Column(db.String(200), nullable=False)
+    item_category = db.Column(db.String(100), nullable=False)
+    max_price = db.Column(db.Integer, nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(20), default='active', nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<Wishlist {self.item_name}>'
+
+class Review(db.Model):
+    __tablename__ = 'reviews'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    transaction_id = db.Column(db.Integer, db.ForeignKey('transactions.id'), nullable=False)
+    reviewer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    reviewee_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)  # 1-5 stars
+    comment = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    transaction = db.relationship('Transaction', backref='reviews', lazy=True)
+    
+    def __repr__(self):
+        return f'<Review {self.rating} stars>'
+
+class PriceHistory(db.Model):
+    __tablename__ = 'price_history'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    item_name = db.Column(db.String(200), nullable=False)
+    item_category = db.Column(db.String(100), nullable=False)
+    price = db.Column(db.Integer, nullable=False)
+    condition = db.Column(db.String(50), nullable=True)
+    sold_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<PriceHistory {self.item_name}: {self.price}>'
+
+class ServerSettings(db.Model):
+    __tablename__ = 'server_settings'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    guild_id = db.Column(db.String(20), unique=True, nullable=False)
+    marketplace_enabled = db.Column(db.Boolean, default=True)
+    verification_required = db.Column(db.Boolean, default=True)
+    min_rep_to_trade = db.Column(db.Float, default=0.0)
+    max_listings_per_user = db.Column(db.Integer, default=10)
+    listing_duration_days = db.Column(db.Integer, default=30)
+    welcome_message = db.Column(db.Text, nullable=True)
+    rules_channel = db.Column(db.String(20), nullable=True)
+    marketplace_channel = db.Column(db.String(20), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<ServerSettings {self.guild_id}>'
+
+class MarketAnalytics(db.Model):
+    __tablename__ = 'market_analytics'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.Date, nullable=False)
+    total_listings = db.Column(db.Integer, default=0)
+    total_transactions = db.Column(db.Integer, default=0)
+    total_value = db.Column(db.Integer, default=0)
+    popular_categories = db.Column(db.JSON, nullable=True)
+    average_prices = db.Column(db.JSON, nullable=True)
+    
+    def __repr__(self):
+        return f'<MarketAnalytics {self.date}>'

@@ -43,7 +43,13 @@ class DatabaseManager:
                 status TEXT DEFAULT 'pending',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 verified_at TIMESTAMP,
-                last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                reputation_score REAL DEFAULT 0.0,
+                total_trades INTEGER DEFAULT 0,
+                bio TEXT,
+                avatar_url TEXT,
+                is_premium BOOLEAN DEFAULT 0,
+                referred_by INTEGER
             )
             """,
             """
@@ -72,6 +78,14 @@ class DatabaseManager:
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 expires_at TIMESTAMP,
+                condition TEXT DEFAULT 'Good',
+                is_featured BOOLEAN DEFAULT 0,
+                views INTEGER DEFAULT 0,
+                favorites INTEGER DEFAULT 0,
+                images TEXT,
+                tags TEXT,
+                original_price INTEGER,
+                negotiable BOOLEAN DEFAULT 1,
                 FOREIGN KEY (seller_id) REFERENCES users (id)
             )
             """,
