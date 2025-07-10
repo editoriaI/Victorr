@@ -158,6 +158,9 @@ class VictorBot(commands.Bot):
         )
         
         print(f"\n{Colors.BOLD}{Colors.PURPLE}Victor is now watching... Always watching...{Colors.ENDC}\n")
+        
+        # Set up rules message reaction
+        await self.setup_rules_reaction()
 
     async def on_guild_join(self, guild):
         """Handle joining a new guild"""
@@ -197,15 +200,48 @@ class VictorBot(commands.Bot):
         if not member or member.bot:
             return
 
-        # Handle rules message reactions
-        if payload.message_id == self.rules_message_id and str(payload.emoji) == "✅":
+        # Handle rules message reactions in the correct channel
+        if payload.channel_id == 1385445808354365580 and payload.message_id == self.rules_message_id and str(payload.emoji) == "✅":
             rules_accepted_role = discord.utils.get(guild.roles, name="Rules Accepted")
             if rules_accepted_role and rules_accepted_role not in member.roles:
                 try:
                     await member.add_roles(rules_accepted_role)
-                    logger.info(f"Assigned Rules Accepted role to {member}")
+                    logger.info(f"Assigned Rules Accepted role to {member} in rules channel")
                 except Exception as e:
                     logger.error(f"Error assigning Rules Accepted role: {e}")
+
+    async def setup_rules_reaction(self):
+        """Setup the rules message with checkmark reaction"""
+        try:
+            rules_channel_id = 1385445808354365580
+            rules_channel = self.get_channel(rules_channel_id)
+            
+            if not rules_channel:
+                logger.warning(f"Rules channel {rules_channel_id} not found")
+                return
+                
+            try:
+                rules_message = await rules_channel.fetch_message(self.rules_message_id)
+                
+                # Check if bot has already reacted
+                for reaction in rules_message.reactions:
+                    if str(reaction.emoji) == "✅":
+                        async for user in reaction.users():
+                            if user.id == self.user.id:
+                                logger.info("Rules message already has Victor's checkmark reaction")
+                                return
+                
+                # Add the checkmark reaction
+                await rules_message.add_reaction("✅")
+                logger.info("Added checkmark reaction to rules message")
+                
+            except discord.NotFound:
+                logger.warning(f"Rules message {self.rules_message_id} not found in channel")
+            except Exception as e:
+                logger.error(f"Error setting up rules reaction: {e}")
+                
+        except Exception as e:
+            logger.error(f"Error in setup_rules_reaction: {e}")
 
     async def on_command_error(self, ctx, error):
         """Global error handler"""
