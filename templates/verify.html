@@ -1,0 +1,252 @@
+
+{% extends "base.html" %}
+
+{% block title %}Verify Account - Victor's Marketplace{% endblock %}
+
+{% block content %}
+<div class="verification-page">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="verification-card">
+                    <div class="text-center mb-4">
+                        <img src="{{ url_for('static', filename='images/victor.svg') }}" 
+                             alt="Victor" class="verification-avatar mb-3">
+                        <h2 class="verification-title">Account Verification</h2>
+                        <p class="verification-subtitle">Link your Highrise account to access the marketplace</p>
+                    </div>
+
+                    {% if verification_code %}
+                    <div class="verification-success">
+                        <div class="alert alert-info">
+                            <h5><i data-feather="info"></i> Verification Code Generated</h5>
+                            <p>Please add this code to your Highrise bio:</p>
+                            <div class="code-display">{{ verification_code }}</div>
+                            <hr>
+                            <p class="mb-0">
+                                <strong>Next steps:</strong><br>
+                                1. Copy the code above<br>
+                                2. Go to your Highrise profile<br>
+                                3. Add the code to your bio<br>
+                                4. Use the Discord bot command <code>/verify {{ highrise_username }}</code> to complete verification
+                            </p>
+                        </div>
+                    </div>
+                    {% else %}
+                    <form method="POST" class="verification-form">
+                        <div class="form-group mb-3">
+                            <label for="highrise_username" class="form-label">Highrise Username</label>
+                            <input type="text" class="form-control" id="highrise_username" name="highrise_username" 
+                                   placeholder="Enter your Highrise username" required>
+                            <div class="form-text">Enter your exact Highrise username (case-sensitive)</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i data-feather="check-circle"></i>
+                            Generate Verification Code
+                        </button>
+                    </form>
+
+                    <div class="verification-info mt-4">
+                        <h6 class="text-muted mb-3">How verification works:</h6>
+                        <div class="steps">
+                            <div class="step">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <strong>Enter Username</strong>
+                                    <p>Provide your Highrise username</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <strong>Get Code</strong>
+                                    <p>Receive a unique verification code</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <strong>Update Bio</strong>
+                                    <p>Add the code to your Highrise bio</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">4</div>
+                                <div class="step-content">
+                                    <strong>Complete</strong>
+                                    <p>Use Discord bot to finish verification</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="verification-footer mt-4">
+                        <p class="text-muted small text-center">
+                            Need help? Join our Discord server and ask for assistance in the verification channel.
+                        </p>
+                        <div class="text-center">
+                            <a href="{{ url_for('member_portal') }}" class="btn btn-outline-secondary">
+                                <i data-feather="arrow-left"></i>
+                                Back to Portal
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.verification-page {
+    background: var(--bg-primary);
+    min-height: 100vh;
+    padding: 2rem 0;
+}
+
+.verification-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 3rem;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.verification-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent-pink), var(--accent-steel));
+}
+
+.verification-avatar {
+    width: 80px;
+    height: 80px;
+    filter: drop-shadow(0 4px 12px rgba(255, 95, 162, 0.3));
+}
+
+.verification-title {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.verification-subtitle {
+    color: var(--text-muted);
+    font-style: italic;
+    margin-bottom: 0;
+}
+
+.verification-form {
+    margin: 2rem 0;
+}
+
+.form-label {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.form-control {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+}
+
+.form-control:focus {
+    background: var(--bg-primary);
+    border-color: var(--accent-pink);
+    color: var(--text-primary);
+    box-shadow: 0 0 0 0.2rem rgba(255, 95, 162, 0.25);
+}
+
+.form-text {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.verification-success {
+    margin: 2rem 0;
+}
+
+.code-display {
+    background: var(--bg-primary);
+    border: 2px solid var(--accent-pink);
+    border-radius: 8px;
+    padding: 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-align: center;
+    color: var(--accent-pink);
+    margin: 1rem 0;
+    user-select: all;
+}
+
+.steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.step {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.step-number {
+    background: var(--accent-pink);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+}
+
+.step-content {
+    flex: 1;
+}
+
+.step-content strong {
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.step-content p {
+    color: var(--text-muted);
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.verification-footer {
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .verification-card {
+        padding: 2rem 1.5rem;
+    }
+    
+    .steps {
+        gap: 1.5rem;
+    }
+}
+</style>
+{% endblock %}
+</script>

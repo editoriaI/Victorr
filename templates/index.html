@@ -22,15 +22,26 @@
                     
                     <div class="hero-actions">
                         {% if not session.user_id %}
-                            <a href="{{ url_for('discord_auth') }}" class="btn btn-primary btn-lg me-3">
+                            <a href="{{ url_for('member_login') }}" class="btn btn-primary btn-lg me-3">
                                 <i data-feather="log-in"></i>
-                                Log in
+                                Member Login
+                            </a>
+                            <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg me-3">
+                                <i data-feather="shield"></i>
+                                Admin Login
                             </a>
                         {% else %}
+                            {% if session.is_admin %}
                             <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg me-3">
                                 <i data-feather="monitor"></i>
-                                Open Dashboard
+                                Admin Dashboard
                             </a>
+                            {% else %}
+                            <a href="{{ url_for('member_portal') }}" class="btn btn-primary btn-lg me-3">
+                                <i data-feather="shopping-bag"></i>
+                                Member Portal
+                            </a>
+                            {% endif %}
                         {% endif %}
                         <a href="https://discord.com/oauth2/authorize?client_id={{ discord_client_id }}&permissions=8&scope=bot%20applications.commands" 
                            class="btn btn-outline-light btn-lg" target="_blank">

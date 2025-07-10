@@ -1,6 +1,7 @@
+
 """
 Victor's Web Dashboard
-Flask application for Discord bot administration
+Flask application for Discord bot administration and member portal
 """
 
 import os
@@ -8,29 +9,18 @@ import requests
 import secrets
 from urllib.parse import urlencode
 from datetime import datetime
+import sqlite3
+import logging
 
 from flask import render_template, request, redirect, url_for, session, flash, jsonify
 from app import app
-from models import User, AdminUser, Listing, Transaction, ActivityLog, UserStatus, ListingStatus
 
-# Mock database for web app - replace with actual database integration later
-class MockDB:
-    @staticmethod
-    def session():
-        return MockDB()
-    
-    def add(self, obj):
-        pass
-    
-    def commit(self):
-        pass
-
-db = MockDB()
+logger = logging.getLogger(__name__)
 
 # Discord OAuth2 Configuration
-DISCORD_CLIENT_ID = os.getenv('DISCORD_CLIENT_ID', '1234567890')
-DISCORD_CLIENT_SECRET = os.getenv('DISCORD_CLIENT_SECRET', 'your_client_secret')
-DISCORD_REDIRECT_URI = os.getenv('DISCORD_REDIRECT_URI', f'https://{os.getenv("REPLIT_DEV_DOMAIN", "localhost:5000")}/auth/discord/callback')
+DISCORD_CLIENT_ID = os.getenv('DISCORD_CLIENT_ID', '1370481883326402652')
+DISCORD_CLIENT_SECRET = os.getenv('DISCORD_CLIENT_SECRET', 'QKqzCRl1FQM6lJnwm1jJGMnuJg1tDN1g')
+DISCORD_REDIRECT_URI = f'https://{os.getenv("REPLIT_DEV_DOMAIN", "localhost:5000")}/auth/discord/callback'
 DISCORD_BOT_TOKEN = os.getenv('DISCORD_BOT_TOKEN', '')
 
 # Discord API endpoints
@@ -38,26 +28,50 @@ DISCORD_API_BASE = 'https://discord.com/api/v10'
 DISCORD_OAUTH_URL = 'https://discord.com/api/oauth2/authorize'
 DISCORD_TOKEN_URL = 'https://discord.com/api/oauth2/token'
 
+def get_db_connection():
+    """Get database connection"""
+    return sqlite3.connect('victor_bot.db')
+
 def log_activity(action, details=None, user_id=None):
     """Log user activity"""
     try:
-        activity = ActivityLog(
-            user_id=user_id,
-            action=action,
-            details=details,
-            ip_address=request.remote_addr,
-            user_agent=request.headers.get('User-Agent')
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO activity_logs (user_id, action, details, ip_address, user_agent, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+            (user_id, action, str(details) if details else None, request.remote_addr, request.headers.get('User-Agent'), datetime.now())
         )
-        db.session.add(activity)
-        db.session.commit()
+        conn.commit()
+        conn.close()
     except Exception as e:
-        print(f"Error logging activity: {e}")
+        logger.error(f"Error logging activity: {e}")
 
 def require_auth(f):
     """Decorator to require authentication"""
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
             return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    decorated_function.__name__ = f.__name__
+    return decorated_function
+
+def require_member_auth(f):
+    """Decorator to require member authentication"""
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('member_login'))
+        
+        # Check if user is verified
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT status FROM users WHERE discord_id = ?", (session.get('discord_id'),))
+        user = cursor.fetchone()
+        conn.close()
+        
+        if not user or user[0] != 'verified':
+            flash('You must be a verified member to access this area', 'error')
+            return redirect(url_for('member_login'))
+        
         return f(*args, **kwargs)
     decorated_function.__name__ = f.__name__
     return decorated_function
@@ -69,20 +83,36 @@ def index():
 
 @app.route('/login')
 def login():
-    """Login page"""
+    """Admin login page"""
     if 'user_id' in session:
         return redirect(url_for('dashboard'))
-    return render_template('login.html')
+    return render_template('login.html', login_type='admin')
+
+@app.route('/member-login')
+def member_login():
+    """Member login page"""
+    if 'user_id' in session:
+        return redirect(url_for('member_portal'))
+    return render_template('login.html', login_type='member')
 
 @app.route('/auth/discord')
 def discord_auth():
-    """Redirect to Discord OAuth"""
+    """Redirect to Discord OAuth for admin"""
+    return discord_auth_helper('admin')
+
+@app.route('/auth/discord/member')
+def discord_auth_member():
+    """Redirect to Discord OAuth for member"""
+    return discord_auth_helper('member')
+
+def discord_auth_helper(auth_type):
+    """Helper for Discord OAuth"""
     params = {
         'client_id': DISCORD_CLIENT_ID,
         'redirect_uri': DISCORD_REDIRECT_URI,
         'response_type': 'code',
         'scope': 'identify email guilds',
-        'state': secrets.token_urlsafe(32)
+        'state': f"{auth_type}:{secrets.token_urlsafe(32)}"
     }
     
     session['oauth_state'] = params['state']
@@ -98,11 +128,14 @@ def discord_callback():
     # Verify state
     if not state or state != session.get('oauth_state'):
         flash('Invalid authentication state', 'error')
-        return redirect(url_for('login'))
+        return redirect(url_for('index'))
+    
+    # Extract auth type from state
+    auth_type = state.split(':')[0] if ':' in state else 'admin'
     
     if not code:
         flash('Authentication failed', 'error')
-        return redirect(url_for('login'))
+        return redirect(url_for('member_login' if auth_type == 'member' else 'login'))
     
     try:
         # Exchange code for token
@@ -119,10 +152,9 @@ def discord_callback():
         
         if 'access_token' not in token_json:
             flash('Failed to get access token', 'error')
-            return redirect(url_for('login'))
+            return redirect(url_for('member_login' if auth_type == 'member' else 'login'))
         
         access_token = token_json['access_token']
-        refresh_token = token_json.get('refresh_token')
         
         # Get user info
         headers = {'Authorization': f'Bearer {access_token}'}
@@ -131,9 +163,8 @@ def discord_callback():
         
         if 'id' not in user_data:
             flash('Failed to get user information', 'error')
-            return redirect(url_for('login'))
+            return redirect(url_for('member_login' if auth_type == 'member' else 'login'))
         
-        # Check if user is admin or bot owner
         discord_id = user_data['id']
         username = f"{user_data['username']}#{user_data.get('discriminator', '0000')}"
         avatar_url = None
@@ -141,130 +172,242 @@ def discord_callback():
         if user_data.get('avatar'):
             avatar_url = f"https://cdn.discordapp.com/avatars/{discord_id}/{user_data['avatar']}.png"
         
-        # Create or update admin user
-        admin_user = AdminUser.query.filter_by(discord_id=discord_id).first()
-        if not admin_user:
-            admin_user = AdminUser(
-                discord_id=discord_id,
-                discord_username=username,
-                avatar_url=avatar_url,
-                access_token=access_token,
-                refresh_token=refresh_token
-            )
-            db.session.add(admin_user)
-        else:
-            admin_user.discord_username = username
-            admin_user.avatar_url = avatar_url
-            admin_user.access_token = access_token
-            admin_user.refresh_token = refresh_token
-            admin_user.last_login = datetime.utcnow()
+        # Check if user exists in database
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE discord_id = ?", (discord_id,))
+        user = cursor.fetchone()
         
-        db.session.commit()
+        if auth_type == 'admin':
+            # Admin login - check for admin privileges (simplified)
+            admin_ids = ['223906501008424961']  # Add your Discord ID here
+            if discord_id not in admin_ids:
+                flash('Access denied. Admin privileges required.', 'error')
+                conn.close()
+                return redirect(url_for('login'))
+            
+            session['user_id'] = discord_id
+            session['discord_id'] = discord_id
+            session['username'] = username
+            session['avatar_url'] = avatar_url
+            session['is_admin'] = True
+            
+            conn.close()
+            log_activity('admin_login_success', {'discord_id': discord_id}, discord_id)
+            flash('Successfully logged in as admin!', 'success')
+            return redirect(url_for('dashboard'))
         
-        # Set session
-        session['user_id'] = admin_user.id
-        session['discord_id'] = discord_id
-        session['username'] = username
-        session['avatar_url'] = avatar_url
-        
-        log_activity('login_success', {'discord_id': discord_id}, admin_user.id)
-        flash('Successfully logged in!', 'success')
-        return redirect(url_for('dashboard'))
+        else:  # member login
+            if not user:
+                flash('Account not found. Please verify your account first using the Discord bot.', 'error')
+                conn.close()
+                return redirect(url_for('member_login'))
+            
+            if user[6] != 'verified':  # status column
+                flash('Your account is not verified. Please complete verification using the Discord bot.', 'warning')
+                conn.close()
+                return redirect(url_for('member_login'))
+            
+            session['user_id'] = user[0]  # database ID
+            session['discord_id'] = discord_id
+            session['username'] = username
+            session['avatar_url'] = avatar_url
+            session['highrise_username'] = user[3]  # highrise_username column
+            session['is_admin'] = False
+            
+            conn.close()
+            log_activity('member_login_success', {'discord_id': discord_id}, user[0])
+            flash('Welcome back to the marketplace!', 'success')
+            return redirect(url_for('member_portal'))
         
     except Exception as e:
+        logger.error(f"Authentication error: {e}")
         flash(f'Authentication error: {str(e)}', 'error')
-        return redirect(url_for('login'))
+        return redirect(url_for('member_login' if auth_type == 'member' else 'login'))
 
 @app.route('/dashboard')
 @require_auth
 def dashboard():
-    """Main dashboard"""
+    """Admin dashboard"""
     try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
         # Get statistics
-        total_users = User.query.count()
-        verified_users = User.query.filter_by(status='verified').count()
-        active_listings = Listing.query.filter_by(status='active').count()
-        total_transactions = Transaction.query.count()
+        cursor.execute("SELECT COUNT(*) FROM users")
+        total_users = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) FROM users WHERE status = 'verified'")
+        verified_users = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) FROM listings WHERE status = 'active'")
+        active_listings = cursor.fetchone()[0]
         
         # Get recent activity
-        recent_users = User.query.order_by(User.created_at.desc()).limit(5).all()
-        recent_listings = Listing.query.order_by(Listing.created_at.desc()).limit(5).all()
-        recent_transactions = Transaction.query.order_by(Transaction.created_at.desc()).limit(5).all()
+        cursor.execute("SELECT * FROM users ORDER BY created_at DESC LIMIT 5")
+        recent_users = cursor.fetchall()
+        
+        cursor.execute("SELECT * FROM listings ORDER BY created_at DESC LIMIT 5")
+        recent_listings = cursor.fetchall()
+        
+        conn.close()
         
         stats = {
             'total_users': total_users,
             'verified_users': verified_users,
             'active_listings': active_listings,
-            'total_transactions': total_transactions
+            'total_transactions': 0
         }
         
         return render_template('dashboard.html', 
                              stats=stats,
                              recent_users=recent_users,
-                             recent_listings=recent_listings,
-                             recent_transactions=recent_transactions)
+                             recent_listings=recent_listings)
                              
     except Exception as e:
+        logger.error(f"Error loading dashboard: {e}")
         flash(f'Error loading dashboard: {str(e)}', 'error')
         return render_template('dashboard.html', stats={})
 
-@app.route('/users')
-@require_auth
-def users():
-    """User management page"""
-    page = request.args.get('page', 1, type=int)
-    search = request.args.get('search', '')
-    status_filter = request.args.get('status', '')
+@app.route('/member-portal')
+@require_member_auth
+def member_portal():
+    """Member portal dashboard"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Get user's listings
+        cursor.execute("SELECT * FROM listings WHERE seller_id = ? ORDER BY created_at DESC", 
+                      (session['user_id'],))
+        user_listings = cursor.fetchall()
+        
+        # Get recent marketplace activity
+        cursor.execute("SELECT * FROM listings WHERE status = 'active' ORDER BY created_at DESC LIMIT 10")
+        recent_listings = cursor.fetchall()
+        
+        conn.close()
+        
+        return render_template('member_portal.html', 
+                             user_listings=user_listings,
+                             recent_listings=recent_listings,
+                             highrise_username=session.get('highrise_username'))
+                             
+    except Exception as e:
+        logger.error(f"Error loading member portal: {e}")
+        flash(f'Error loading member portal: {str(e)}', 'error')
+        return render_template('member_portal.html', user_listings=[], recent_listings=[])
+
+@app.route('/verify', methods=['GET', 'POST'])
+def web_verify():
+    """Web-based verification"""
+    if request.method == 'POST':
+        highrise_username = request.form.get('highrise_username')
+        discord_id = session.get('discord_id')
+        
+        if not discord_id:
+            flash('Please log in first', 'error')
+            return redirect(url_for('member_login'))
+        
+        try:
+            # Generate verification code
+            import random
+            import string
+            verification_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+            
+            # Save to database
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            
+            # Check if user exists
+            cursor.execute("SELECT id FROM users WHERE discord_id = ?", (discord_id,))
+            user = cursor.fetchone()
+            
+            if user:
+                # Update existing user
+                cursor.execute(
+                    "UPDATE users SET highrise_username = ?, verification_code = ? WHERE discord_id = ?",
+                    (highrise_username, verification_code, discord_id)
+                )
+            else:
+                # Create new user
+                cursor.execute(
+                    "INSERT INTO users (discord_id, discord_username, highrise_username, verification_code, status) VALUES (?, ?, ?, ?, 'pending')",
+                    (discord_id, session.get('username'), highrise_username, verification_code)
+                )
+            
+            conn.commit()
+            conn.close()
+            
+            flash(f'Please add this code to your Highrise bio: {verification_code}', 'info')
+            return render_template('verify.html', verification_code=verification_code, highrise_username=highrise_username)
+            
+        except Exception as e:
+            logger.error(f"Verification error: {e}")
+            flash(f'Verification error: {str(e)}', 'error')
     
-    query = User.query
-    
-    if search:
-        query = query.filter(
-            (User.discord_username.contains(search)) |
-            (User.highrise_username.contains(search))
-        )
-    
-    if status_filter:
-        query = query.filter(User.status == status_filter)
-    
-    users = query.order_by(User.created_at.desc()).paginate(
-        page=page, per_page=20, error_out=False
-    )
-    
-    return render_template('users.html', users=users, search=search, status_filter=status_filter)
+    return render_template('verify.html')
 
 @app.route('/marketplace')
-@require_auth
+@require_member_auth
 def marketplace():
-    """Marketplace management page"""
-    page = request.args.get('page', 1, type=int)
-    search = request.args.get('search', '')
-    category_filter = request.args.get('category', '')
-    
-    query = Listing.query
-    
-    if search:
-        query = query.filter(Listing.item_name.contains(search))
-    
-    if category_filter:
-        query = query.filter(Listing.item_category == category_filter)
-    
-    listings = query.order_by(Listing.created_at.desc()).paginate(
-        page=page, per_page=20, error_out=False
-    )
-    
-    return render_template('marketplace.html', listings=listings, search=search, category_filter=category_filter)
+    """Member marketplace view"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        search = request.args.get('search', '')
+        category = request.args.get('category', '')
+        
+        query = "SELECT l.*, u.discord_username, u.highrise_username FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.status = 'active'"
+        params = []
+        
+        if search:
+            query += " AND l.item_name LIKE ?"
+            params.append(f"%{search}%")
+        
+        if category:
+            query += " AND l.item_category = ?"
+            params.append(category)
+        
+        query += " ORDER BY l.created_at DESC LIMIT 20"
+        
+        cursor.execute(query, params)
+        listings = cursor.fetchall()
+        
+        conn.close()
+        
+        return render_template('marketplace.html', listings=listings, search=search, category=category)
+        
+    except Exception as e:
+        logger.error(f"Error loading marketplace: {e}")
+        flash(f'Error loading marketplace: {str(e)}', 'error')
+        return render_template('marketplace.html', listings=[])
 
 @app.route('/api/stats')
 @require_auth
 def api_stats():
     """API endpoint for dashboard statistics"""
     try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT COUNT(*) FROM users")
+        total_users = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) FROM users WHERE status = 'verified'")
+        verified_users = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) FROM listings WHERE status = 'active'")
+        active_listings = cursor.fetchone()[0]
+        
+        conn.close()
+        
         stats = {
-            'total_users': User.query.count(),
-            'verified_users': User.query.filter_by(status='verified').count(),
-            'active_listings': Listing.query.filter_by(status='active').count(),
-            'total_transactions': Transaction.query.count()
+            'total_users': total_users,
+            'verified_users': verified_users,
+            'active_listings': active_listings,
+            'total_transactions': 0
         }
         return jsonify(stats)
     except Exception as e:
