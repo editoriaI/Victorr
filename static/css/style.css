@@ -128,45 +128,41 @@ body.victor-theme::before {
     box-shadow: var(--glow);
 }
 
-/* Flash Messages */
-.flash-messages {
+/* Custom Message */
+.custom-message {
     position: fixed;
-    top: 20px;
+    top: 100px;
     right: 20px;
     z-index: 9999;
-    max-width: 400px;
+    max-width: 300px;
 }
 
-.flash-messages .alert {
-    margin-bottom: 10px;
-    border: none;
-    border-radius: 12px;
+.message-content {
+    background: var(--bg-card);
+    border: 2px solid var(--accent-primary);
+    border-radius: 16px;
+    padding: 1.5rem;
     box-shadow: var(--shadow);
     backdrop-filter: blur(10px);
+    animation: pulseGlow 2s ease-in-out infinite alternate;
 }
 
-.alert-success {
-    background: rgba(52, 211, 153, 0.1);
+.message-content h3 {
     color: var(--accent-primary);
-    border: 1px solid var(--accent-primary);
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-shadow: var(--glow);
+    text-align: center;
 }
 
-.alert-danger {
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--accent-danger);
-    border: 1px solid var(--accent-danger);
-}
-
-.alert-warning {
-    background: rgba(251, 191, 36, 0.1);
-    color: var(--accent-warning);
-    border: 1px solid var(--accent-warning);
-}
-
-.alert-info {
-    background: rgba(52, 211, 153, 0.1);
-    color: var(--accent-tertiary);
-    border: 1px solid var(--accent-tertiary);
+@keyframes pulseGlow {
+    0% {
+        box-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
+    }
+    100% {
+        box-shadow: 0 0 30px rgba(52, 211, 153, 0.6);
+    }
 }
 
 /* Dashboard Container */

@@ -55,19 +55,12 @@
     <!-- Mobile Sidebar Overlay -->
     <div class="mobile-sidebar-overlay" onclick="closeMobileSidebar()"></div>
 
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="flash-messages">
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    {% endwith %}
+    <!-- Custom Message -->
+    <div class="custom-message">
+        <div class="message-content">
+            <h3>I'm here girl</h3>
+        </div>
+    </div>
 
     <!-- Main Content -->
     {% block content %}{% endblock %}

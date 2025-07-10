@@ -24,7 +24,7 @@
                 <span>Marketplace</span>
             </a>
             <a href="#analytics" class="nav-item" data-section="analytics" onclick="closeMobileSidebar()">
-                <i data-feather="bar-chart-3"></i>
+                <i data-feather="bar-chart"></i>
                 <span>Analytics</span>
             </a>
             <a href="#settings" class="nav-item" data-section="settings" onclick="closeMobileSidebar()">
@@ -106,7 +106,7 @@
                                         {% endif %}
                                         <div class="activity-meta">
                                             <span class="status-badge status-{{ user.status }}">{{ user.status.title() }}</span>
-                                            <span class="activity-time">{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'Unknown' }}</span>
+                                            <span class="activity-time">{{ user.created_at or 'Unknown' }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -132,7 +132,7 @@
                                         <strong>{{ listing.item_name }}</strong>
                                         <div class="activity-meta">
                                             <span class="price">{{ "{:,}".format(listing.price) }} coins</span>
-                                            <span class="activity-time">{{ listing.created_at.strftime('%Y-%m-%d') if listing.created_at else 'Unknown' }}</span>
+                                            <span class="activity-time">{{ listing.created_at or 'Unknown' }}</span>
                                         </div>
                                     </div>
                                 </div>

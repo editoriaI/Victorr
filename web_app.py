@@ -262,11 +262,34 @@ def dashboard():
         active_listings = cursor.fetchone()[0]
         
         # Get recent activity
-        cursor.execute("SELECT * FROM users ORDER BY created_at DESC LIMIT 5")
-        recent_users = cursor.fetchall()
+        cursor.execute("SELECT id, discord_id, discord_username, highrise_username, status, created_at FROM users ORDER BY created_at DESC LIMIT 5")
+        recent_users_raw = cursor.fetchall()
         
-        cursor.execute("SELECT * FROM listings ORDER BY created_at DESC LIMIT 5")
-        recent_listings = cursor.fetchall()
+        cursor.execute("SELECT id, seller_id, item_name, price, status, created_at FROM listings ORDER BY created_at DESC LIMIT 5")
+        recent_listings_raw = cursor.fetchall()
+        
+        # Convert tuples to dictionaries for easier template access
+        recent_users = []
+        for user in recent_users_raw:
+            recent_users.append({
+                'id': user[0],
+                'discord_id': user[1],
+                'discord_username': user[2],
+                'highrise_username': user[3],
+                'status': user[4],
+                'created_at': user[5]
+            })
+        
+        recent_listings = []
+        for listing in recent_listings_raw:
+            recent_listings.append({
+                'id': listing[0],
+                'seller_id': listing[1],
+                'item_name': listing[2],
+                'price': listing[3],
+                'status': listing[4],
+                'created_at': listing[5]
+            })
         
         conn.close()
         
