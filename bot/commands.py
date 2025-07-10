@@ -837,3 +837,12 @@ class BotCommands(commands.Cog):
             view = VerificationView(verification_code, highrise_username)
 
             await interaction.followup.send(embed=embed, view=view, ephemeral=True)
+
+        except Exception as e:
+            logger.error(f"Error in verify command: {e}")
+            embed = discord.Embed(
+                title="❌ Error",
+                description="An error occurred during verification. Please try again later.",
+                color=0xFF0000
+            )
+            await interaction.followup.send(embed=embed, ephemeral=True)
