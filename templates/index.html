@@ -44,16 +44,21 @@
                             {% endif %}
                         {% endif %}
                         <a href="https://discord.com/oauth2/authorize?client_id={{ discord_client_id }}&permissions=8&scope=bot%20applications.commands" 
-                           class="btn btn-outline-light btn-lg" target="_blank">
+                           class="btn btn-outline-light btn-lg me-3" target="_blank">
                             <i data-feather="plus-circle"></i>
                             Add to Server
+                        </a>
+                        <a href="https://discord.gg/ZBXH4E7RDU" 
+                           class="btn btn-primary btn-lg" target="_blank">
+                            <i data-feather="users"></i>
+                            Join Server
                         </a>
                     </div>
                 </div>
                 
                 <div class="col-md-6 text-center">
-                    <img src="{{ url_for('static', filename='images/victor.svg') }}" 
-                         alt="Victor" class="victor-image">
+                    <img src="{{ url_for('static', filename='images/victor_hq_banner.png') }}" 
+                         alt="Victor HQ - Undead. Underpaid. Unbothered." class="victor-banner">
                 </div>
             </div>
         </div>
@@ -129,6 +134,20 @@
                         <p>Optimized for speed with 24/7 uptime. Victor never sleeps, so your trades don't have to wait.</p>
                     </div>
                 </div>
+                
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i data-feather="users"></i>
+                        </div>
+                        <h3>Join the Community</h3>
+                        <p>Connect with fellow traders on our Discord server. Share tips, find deals, and become part of Victor's crew.</p>
+                        <a href="https://discord.gg/ZBXH4E7RDU" class="btn btn-primary btn-sm mt-2" target="_blank">
+                            <i data-feather="users"></i>
+                            Join Discord
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -143,6 +162,17 @@
                         Join the community of verified Highrise traders and experience secure, efficient trading like never before.
                     </p>
                     
+                    <div class="cta-buttons">
+                        <a href="https://discord.gg/ZBXH4E7RDU" class="btn btn-primary btn-lg me-3" target="_blank">
+                            <i data-feather="users"></i>
+                            Join Our Discord
+                        </a>
+                        <a href="https://discord.com/oauth2/authorize?client_id={{ discord_client_id }}&permissions=8&scope=bot%20applications.commands" 
+                           class="btn btn-outline-light btn-lg" target="_blank">
+                            <i data-feather="plus-circle"></i>
+                            Add to Server
+                        </a>
+                    </div>
 
                 </div>
             </div>

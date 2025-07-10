@@ -841,6 +841,15 @@ body.victor-theme {
     filter: drop-shadow(0 10px 30px rgba(255, 255, 255, 0.1));
 }
 
+.victor-banner {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    border-radius: 12px;
+    filter: drop-shadow(0 10px 30px rgba(94, 234, 212, 0.3));
+    animation: victorFloat 6s ease-in-out infinite;
+}
+
 .features-section {
     padding: 6rem 0;
     background: var(--bg-secondary);
