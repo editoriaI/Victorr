@@ -123,7 +123,12 @@ class MarketplaceCog(commands.Cog):
             # Create view with notify button
             view = SellView(interaction.user.id, name, f"{price:,} coins")
 
-            await target_channel.send(embed=embed, view=view)
+            # Get role mention based on item type
+            role_name = "Rare Sales Values"  # Same role for all sales types
+            role = discord.utils.get(interaction.guild.roles, name=role_name)
+            role_mention = role.mention if role else ""
+
+            await target_channel.send(content=role_mention, embed=embed, view=view)
             await interaction.followup.send(f"✅ Your {type} has been listed in {target_channel.mention}!", ephemeral=True)
 
         except Exception as e:
@@ -383,6 +388,10 @@ class AdminCog(commands.Cog):
                 await interaction.followup.send("❌ #giveaway channel not found", ephemeral=True)
                 return
 
+            # Get the Giveaway Notifications role
+            giveaway_role = discord.utils.get(interaction.guild.roles, name="Giveaway Notifications")
+            role_mention = giveaway_role.mention if giveaway_role else ""
+
             # Create giveaway embed
             embed = discord.Embed(
                 title="🎉 GIVEAWAY",
@@ -392,7 +401,7 @@ class AdminCog(commands.Cog):
             )
             embed.set_footer(text="Victor's Giveaway System")
 
-            giveaway_msg = await giveaway_channel.send(embed=embed)
+            giveaway_msg = await giveaway_channel.send(content=role_mention, embed=embed)
             await giveaway_msg.add_reaction("🎉")
 
             await interaction.followup.send(f"✅ Giveaway started in {giveaway_channel.mention}!")
@@ -685,6 +694,46 @@ Features:
         await interaction.followup.send(f"✅ Sent information embeds to {sent_count} channels!")
 
         logger.info(f"Channel info embeds deployment complete: {sent_count} channels updated")
+
+    @app_commands.command(name="announce", description="Send an announcement")
+    @app_commands.checks.has_role("owner of this house")
+    @app_commands.describe(
+        title="Announcement title",
+        message="Announcement message",
+        ping_events="Whether to ping Event Notifications role"
+    )
+    async def announce(self, interaction: discord.Interaction, title: str, message: str, ping_events: bool = True):
+        await interaction.response.defer()
+
+        try:
+            # Find announcements channel
+            announcements_channel = discord.utils.get(interaction.guild.channels, name="announcements")
+            if not announcements_channel:
+                await interaction.followup.send("❌ #announcements channel not found", ephemeral=True)
+                return
+
+            # Get role mention if requested
+            role_mention = ""
+            if ping_events:
+                event_role = discord.utils.get(interaction.guild.roles, name="Event Notifications")
+                if event_role:
+                    role_mention = event_role.mention
+
+            # Create announcement embed
+            embed = discord.Embed(
+                title=f"📢 {title}",
+                description=message,
+                color=0xFF5FA2,
+                timestamp=datetime.utcnow()
+            )
+            embed.set_footer(text="Victor's Announcement System")
+
+            await announcements_channel.send(content=role_mention, embed=embed)
+            await interaction.followup.send(f"✅ Announcement posted in {announcements_channel.mention}!")
+
+        except Exception as e:
+            logger.error(f"Error in announce command: {e}")
+            await interaction.followup.send("❌ An error occurred while posting the announcement", ephemeral=True)
 
 class ReactionRoleCog(commands.Cog):
     def __init__(self, bot):
