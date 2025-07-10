@@ -762,8 +762,6 @@ from datetime import datetime, timedelta
 import random
 import string
 
-from ..utils import fetch_highrise_profile
-
 logger = logging.getLogger(__name__)
 
 class VerificationView(discord.ui.View):
