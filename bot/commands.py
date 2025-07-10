@@ -836,4 +836,4 @@ class BotCommands(commands.Cog):
             # Create view with verification button
             view = VerificationView(verification_code, highrise_username)
 
-            await interaction.followup.send(embed=embed, view=view, ephemeral=
+            await interaction.followup.send(embed=embed, view=view, ephemeral=True)
