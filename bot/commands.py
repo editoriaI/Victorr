@@ -466,6 +466,92 @@ Features:
 
         await interaction.response.send_message(overview_text)
 
+    @app_commands.command(name="send_rules", description="Send rules message to the rules channel")
+    @app_commands.checks.has_role("owner of this house")
+    async def send_rules(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+
+        try:
+            # Get the rules channel
+            rules_channel = interaction.guild.get_channel(1385445808354365580)
+            if not rules_channel:
+                await interaction.followup.send("❌ Rules channel not found", ephemeral=True)
+                return
+
+            # Create comprehensive rules embed
+            rules_embed = discord.Embed(
+                title="📜 Highrise Blacklist Server Rules",
+                description="Welcome to the shadows. Follow these rules to survive in Victor's domain.",
+                color=0x8B0000,
+                timestamp=datetime.utcnow()
+            )
+
+            rules_embed.add_field(
+                name="🚫 Rule 1: No Scamming",
+                value="Any form of scamming, fraud, or deceptive trading will result in immediate ban. Victor has no patience for thieves.",
+                inline=False
+            )
+
+            rules_embed.add_field(
+                name="🤝 Rule 2: Respect All Members",
+                value="Treat everyone with respect. No harassment, bullying, or discrimination. Victor demands civility in his domain.",
+                inline=False
+            )
+
+            rules_embed.add_field(
+                name="📢 Rule 3: Use Correct Channels",
+                value="Post content in appropriate channels. Use marketplace channels for trading, general for chat. Organization pleases Victor.",
+                inline=False
+            )
+
+            rules_embed.add_field(
+                name="🔞 Rule 4: Keep Content Appropriate",
+                value="No NSFW content, excessive profanity, or inappropriate material. Victor runs a respectable establishment.",
+                inline=False
+            )
+
+            rules_embed.add_field(
+                name="🚨 Rule 5: No Spam or Self-Promotion",
+                value="No excessive posting, advertising, or self-promotion without permission. Quality over quantity in Victor's realm.",
+                inline=False
+            )
+
+            rules_embed.add_field(
+                name="⚖️ Rule 6: Follow Discord ToS",
+                value="All Discord Terms of Service apply. Breaking Discord rules will result in server consequences.",
+                inline=False
+            )
+
+            rules_embed.add_field(
+                name="🔐 Rule 7: Account Security",
+                value="Keep your accounts secure. Don't share passwords or personal information. Victor cannot protect the careless.",
+                inline=False
+            )
+
+            rules_embed.add_field(
+                name="✅ **ACCEPT RULES**",
+                value="React with ✅ below to accept these rules and gain access to the server. By reacting, you agree to follow all rules and understand that violations may result in warnings, mutes, or permanent bans.",
+                inline=False
+            )
+
+            rules_embed.set_footer(text="Victor's Domain - Breaking rules has consequences", icon_url="https://cdn.discordapp.com/emojis/1234567890123456789.png")
+
+            # Send the rules message
+            rules_message = await rules_channel.send(embed=rules_embed)
+            
+            # Add the checkmark reaction
+            await rules_message.add_reaction("✅")
+
+            # Update the bot's rules_message_id
+            self.bot.rules_message_id = rules_message.id
+
+            await interaction.followup.send(f"✅ Rules message sent to {rules_channel.mention} with ID: {rules_message.id}")
+            logger.info(f"Rules message sent to channel {rules_channel.id} with message ID {rules_message.id}")
+
+        except Exception as e:
+            logger.error(f"Error sending rules: {e}")
+            await interaction.followup.send("❌ Failed to send rules message", ephemeral=True)
+
     @app_commands.command(name="send_channel_info", description="Send information embeds to all channels")
     @app_commands.checks.has_role("owner of this house")
     async def send_channel_info(self, interaction: discord.Interaction):
