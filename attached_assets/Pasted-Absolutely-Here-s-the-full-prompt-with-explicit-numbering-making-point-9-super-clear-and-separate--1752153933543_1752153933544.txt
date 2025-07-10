@@ -1,0 +1,243 @@
+Absolutely! Here’s the full prompt with explicit numbering, making point 9 super clear and separate:
+
+Expand the existing Discord bot Victor with the following features and changes. DO NOT overwrite existing functionality; add modularly and safely. Preserve Victor’s current UI style, theming, embed designs, emoji pack, and overall aesthetic in any new messages, embeds, or buttons created.
+
+1. SELL COMMANDS
+
+Implement the following slash commands:
+
+- /sell item [item_name] [price]  
+- /sell gold [amount] [price_per_1k]  
+- /sell nft [nft_name] [price]
+
+Each sends an embed to the appropriate channel with Victor’s styling and emojis:
+
+- /sell item → #item-sales  
+- /sell gold → #gold-sales  
+- /sell nft → #nft-sales
+
+Embed content includes:
+
+- Seller @mention  
+- Item or gold or NFT name  
+- Price  
+- Timestamp  
+- A 📩 Notify Seller button (with Victor’s emoji styling)
+
+Notify Seller button behavior:
+
+- When clicked, DM the original seller:  
+  “Someone is interested in your listing for: [ITEM_NAME] ([PRICE]). Please respond in the listing channel if still available.”  
+- Optionally, if a #interest-pings channel exists, log the interaction there with Victor’s stylized embed.
+
+No inventory or wallet integration is required; this is purely notification-based.
+
+2. VERIFICATION SYSTEM
+
+Modify the existing `/verify` command:
+
+- Upon successful verification, send a Victor-styled embed to #new-user-verification (NOT #verified-users-log) including:
+
+  ✅ User Verified  
+  Highrise: @username  
+  Timestamp  
+  Optional profile link
+
+- Assign the @Verified role to the user.  
+- DM the user a Victor-themed welcome message including a server guide.  
+- Update the user’s Discord server nickname to match the submitted Highrise username.
+
+3. /setup_server COMMAND
+
+Add a slash command `/setup_server` restricted to role `owner of this house`. This command:
+
+- Deletes all channels and categories (excluding those protected in roles below).  
+- Deletes all roles except these protected roles (do NOT delete):
+
+  - @everyone  
+  - owner of this house  
+  - Any role with managed=True (bot roles)  
+  - Any role with “ping” (case-insensitive) in the name  
+  - Event notifications  
+  - Giveaway notifications  
+  - Rare sales values  
+  - Services  
+  - Room builder  
+  - Raffle notifications  
+  - Commissions
+
+- Creates these roles if missing, preserving Victor’s style and permissions:  
+  @Unverified, @Verified, @Trusted Seller, @Moderator, @Rules Accepted
+
+- Creates the following categories and channels with Victor’s preferred theming:
+
+  Welcome  
+  - #rules  
+  - #announcements  
+  - #new-user-verification
+
+  Marketplace  
+  - #item-sales  
+  - #gold-sales  
+  - #nft-sales  
+  - #sold-alerts
+
+  Listings & Requests  
+  - #wishlist-requests  
+  - #interest-pings
+
+  Community  
+  - #art-showcase  
+  - #pets  
+  - #selfies  
+  - #memes  
+  - #venting-zone
+
+  Moderation (admin only)  
+  - #mod-alerts  
+  - #flagged-listings  
+  - #logs
+
+  Giveaways  
+  - #giveaway
+
+  Pricing  
+  - #price-checks
+
+  Admin  
+  - #victors-vault
+
+Permissions setup:
+
+- @Unverified users can only view #rules and #new-user-verification  
+- Reacting with ✅ emoji in #rules grants @Rules Accepted role  
+- Only users with BOTH @Rules Accepted and @Verified roles can read or write in marketplace, community, or listings channels, or use marketplace commands.
+
+4. REACTION ROLE GATE
+
+Add a listener for raw reaction adds:
+
+- When a user reacts ✅ in #rules, assign them @Rules Accepted role.  
+- This unlocks read-only access to the server, but users still cannot type or use commands until also Verified.
+
+5. MODIFY EXISTING /project_overview COMMAND
+
+Change the existing `/project_overview` command so it sends a **plain text message** (not an embed) with the following content exactly:
+
+Victor is the undead concierge of the Highrise Blacklist. He helps users verify, list items, notify sellers, and manage the black market.
+
+Features:  
+- Sell gold, NFTs, and items  
+- Notify sellers of interest  
+- Verify users before full access  
+- Reaction-based rules gating  
+- Server terraform via /setup_server  
+- Giveaways, price checks, and more
+
+Ensure the command remains restricted to users with the role `owner of this house`.
+
+6. /giveaway COMMAND
+
+Add a slash command `/giveaway` restricted to role `owner of this house` with inputs:
+
+- prize (string): what is being given away  
+- duration (string): duration formatted like “10m”, “1h”, “2d”
+
+Behavior:
+
+- Posts a Victor-themed giveaway embed in #giveaway with prize info and instructions to react with 🎉  
+- After the specified time expires, randomly selects a winner from users who reacted 🎉  
+- Announces winner in #giveaway tagging them and mentioning the prize
+
+7. VICTOR’S VAULT — ADMIN JOURNAL
+
+Add a private channel named #victors-vault under an Admin-only category or permissions so that only users with roles:
+
+- owner of this house  
+- Moderator  
+- Trusted Seller (optional: if desired)
+
+can view and post.
+
+This channel serves as a **child-friendly “journal”** where Victor or admins can post simple, easy-to-understand updates about:
+
+- Server issues  
+- Bot updates  
+- Current problems or ongoing fixes  
+- General news explained in very clear, simple language anyone can understand
+
+Make sure:
+
+- The channel is hidden from regular users.  
+- Messages are formatted in a friendly, positive tone.  
+- Victor can post automatic updates here when relevant (optional).  
+- Admins can post manual notes.
+
+8. SAMPLE /setup_server FUNCTION TO INCLUDE
+
+```python
+@bot.tree.command(name="setup_server", description="Strips and rebuilds the server layout.")
+@app_commands.checks.has_role("owner of this house")
+async def setup_server(interaction: discord.Interaction):
+    await interaction.response.send_message("🛠️ Starting server terraform. Please wait...", ephemeral=True)
+    guild = interaction.guild
+
+    protected_roles = [
+        "@everyone", "owner of this house", "event notifications", "giveaway notifications",
+        "rare sales values", "services", "room builder", "raffle notifications", "commissions"
+    ]
+
+    for channel in guild.channels:
+        try:
+            await channel.delete()
+        except Exception:
+            continue
+
+    for role in guild.roles:
+        name = role.name.lower()
+        if role.managed or name in [r.lower() for r in protected_roles] or "ping" in name:
+            continue
+        try:
+            await role.delete()
+        except Exception:
+            continue
+
+    role_names = ["Unverified", "Verified", "Trusted Seller", "Moderator", "Rules Accepted"]
+    for name in role_names:
+        if not discord.utils.get(guild.roles, name=name):
+            await guild.create_role(name=name)
+
+    layout = {
+        "Welcome": ["rules", "announcements", "new-user-verification"],
+        "Marketplace": ["item-sales", "gold-sales", "nft-sales", "sold-alerts"],
+        "Listings & Requests": ["wishlist-requests", "interest-pings"],
+        "Community": ["art-showcase", "pets", "selfies", "memes", "venting-zone"],
+        "Moderation": ["mod-alerts", "flagged-listings", "logs"],
+        "Giveaways": ["giveaway"],
+        "Pricing": ["price-checks"],
+        "Admin": ["victors-vault"]
+    }
+
+    for cat_name, ch_list in layout.items():
+        category = await guild.create_category(cat_name)
+        for ch_name in ch_list:
+            await guild.create_text_channel(ch_name, category=category)
+
+    await interaction.followup.send("✅ Server terraform complete.")
+
+	9.	FINAL INSTRUCTIONS
+
+	•	All new features run ONLY when commands are invoked (no automatic execution on bot startup).
+	•	Preserve Victor’s theming, emoji pack, UI/UX style in all new embeds, messages, and buttons.
+	•	Use Discord button components for Notify Seller buttons with proper callback handling.
+	•	Use on_raw_reaction_add event for assigning @Rules Accepted role on ✅ reaction in #rules.
+	•	Change verified user’s nickname to their Highrise username after successful verification.
+	•	Ensure giveaway command uses async timers and safely selects winners.
+	•	Enforce role-based gating before allowing access to marketplace commands and channels.
+	•	Victor’s Vault channel should be private, child-friendly language only, and visible to specified admin roles.
+
+End of prompt.
+
+---
+
+Let me know if you want me to generate code snippets or implementation examples next!
