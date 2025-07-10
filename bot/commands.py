@@ -429,6 +429,28 @@ class UtilityCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @app_commands.command(name="victorhq", description="Access Victor's web dashboard")
+    async def victorhq(self, interaction: discord.Interaction):
+        embed = discord.Embed(
+            title="🌐 Victor HQ Dashboard",
+            description="Access Victor's web dashboard for advanced features and management.",
+            color=0x8B0000,
+            timestamp=datetime.utcnow()
+        )
+        embed.add_field(
+            name="🔗 Dashboard Link",
+            value="[**Click here to access Victor HQ**](https://tinyurl.com/VictorHQ)",
+            inline=False
+        )
+        embed.add_field(
+            name="📊 Features",
+            value="• User management and verification\n• Marketplace analytics\n• Server configuration\n• Activity monitoring\n• Administrative tools",
+            inline=False
+        )
+        embed.set_footer(text="Victor's Web Dashboard", icon_url="https://cdn.discordapp.com/emojis/1234567890123456789.png")
+        
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
     @app_commands.command(name="project_overview", description="Get an overview of Victor's capabilities")
     @app_commands.checks.has_role("owner of this house")
     async def project_overview(self, interaction: discord.Interaction):
