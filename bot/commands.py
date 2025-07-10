@@ -761,7 +761,7 @@ import logging
 from datetime import datetime, timedelta
 import random
 import string
-from ..database import get_user_by_discord_id, get_all_listings, get_listing_by_id, create_listing, mark_listing_sold, User, db
+
 from ..utils import fetch_highrise_profile
 
 logger = logging.getLogger(__name__)
