@@ -28,6 +28,9 @@ DISCORD_API_BASE = 'https://discord.com/api/v10'
 DISCORD_OAUTH_URL = 'https://discord.com/api/oauth2/authorize'
 DISCORD_TOKEN_URL = 'https://discord.com/api/oauth2/token'
 
+# Admin Discord IDs - Add your Discord ID here
+ADMIN_IDS = ['223906501008424961']  # Replace with actual admin Discord IDs
+
 def get_db_connection():
     """Get database connection"""
     return sqlite3.connect('victor_bot.db')
@@ -55,22 +58,23 @@ def require_auth(f):
     decorated_function.__name__ = f.__name__
     return decorated_function
 
-def require_member_auth(f):
-    """Decorator to require member authentication"""
+def require_verified_user(f):
+    """Decorator to require verified user"""
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
-            return redirect(url_for('member_login'))
+            return redirect(url_for('login'))
         
-        # Check if user is verified
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT status FROM users WHERE discord_id = ?", (session.get('discord_id'),))
-        user = cursor.fetchone()
-        conn.close()
-        
-        if not user or user[0] != 'verified':
-            flash('You must be a verified member to access this area', 'error')
-            return redirect(url_for('member_login'))
+        # Check if user is verified (unless admin)
+        if not session.get('is_admin', False):
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT status FROM users WHERE discord_id = ?", (session.get('discord_id'),))
+            user = cursor.fetchone()
+            conn.close()
+            
+            if not user or user[0] != 'verified':
+                flash('You must be a verified member to access this area', 'error')
+                return redirect(url_for('verify'))
         
         return f(*args, **kwargs)
     decorated_function.__name__ = f.__name__
@@ -83,36 +87,23 @@ def index():
 
 @app.route('/login')
 def login():
-    """Admin login page"""
+    """Unified login page"""
     if 'user_id' in session:
-        return redirect(url_for('dashboard'))
-    return render_template('login.html', login_type='admin')
-
-@app.route('/member-login')
-def member_login():
-    """Member login page"""
-    if 'user_id' in session:
-        return redirect(url_for('member_portal'))
-    return render_template('login.html', login_type='member')
+        if session.get('is_admin'):
+            return redirect(url_for('dashboard'))
+        else:
+            return redirect(url_for('member_portal'))
+    return render_template('login.html')
 
 @app.route('/auth/discord')
 def discord_auth():
-    """Redirect to Discord OAuth for admin"""
-    return discord_auth_helper('admin')
-
-@app.route('/auth/discord/member')
-def discord_auth_member():
-    """Redirect to Discord OAuth for member"""
-    return discord_auth_helper('member')
-
-def discord_auth_helper(auth_type):
-    """Helper for Discord OAuth"""
+    """Redirect to Discord OAuth"""
     params = {
         'client_id': DISCORD_CLIENT_ID,
         'redirect_uri': DISCORD_REDIRECT_URI,
         'response_type': 'code',
         'scope': 'identify email guilds',
-        'state': f"{auth_type}:{secrets.token_urlsafe(32)}"
+        'state': secrets.token_urlsafe(32)
     }
     
     session['oauth_state'] = params['state']
@@ -130,12 +121,9 @@ def discord_callback():
         flash('Invalid authentication state', 'error')
         return redirect(url_for('index'))
     
-    # Extract auth type from state
-    auth_type = state.split(':')[0] if ':' in state else 'admin'
-    
     if not code:
         flash('Authentication failed', 'error')
-        return redirect(url_for('member_login' if auth_type == 'member' else 'login'))
+        return redirect(url_for('login'))
     
     try:
         # Exchange code for token
@@ -152,7 +140,7 @@ def discord_callback():
         
         if 'access_token' not in token_json:
             flash('Failed to get access token', 'error')
-            return redirect(url_for('member_login' if auth_type == 'member' else 'login'))
+            return redirect(url_for('login'))
         
         access_token = token_json['access_token']
         
@@ -163,7 +151,7 @@ def discord_callback():
         
         if 'id' not in user_data:
             flash('Failed to get user information', 'error')
-            return redirect(url_for('member_login' if auth_type == 'member' else 'login'))
+            return redirect(url_for('login'))
         
         discord_id = user_data['id']
         username = f"{user_data['username']}#{user_data.get('discriminator', '0000')}"
@@ -172,20 +160,17 @@ def discord_callback():
         if user_data.get('avatar'):
             avatar_url = f"https://cdn.discordapp.com/avatars/{discord_id}/{user_data['avatar']}.png"
         
+        # Check if user is admin
+        is_admin = discord_id in ADMIN_IDS
+        
         # Check if user exists in database
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM users WHERE discord_id = ?", (discord_id,))
         user = cursor.fetchone()
         
-        if auth_type == 'admin':
-            # Admin login - check for admin privileges (simplified)
-            admin_ids = ['223906501008424961']  # Add your Discord ID here
-            if discord_id not in admin_ids:
-                flash('Access denied. Admin privileges required.', 'error')
-                conn.close()
-                return redirect(url_for('login'))
-            
+        if is_admin:
+            # Admin access
             session['user_id'] = discord_id
             session['discord_id'] = discord_id
             session['username'] = username
@@ -194,41 +179,41 @@ def discord_callback():
             
             conn.close()
             log_activity('admin_login_success', {'discord_id': discord_id}, discord_id)
-            flash('Successfully logged in as admin!', 'success')
+            flash('Welcome to Victor\'s domain, dark one.', 'success')
             return redirect(url_for('dashboard'))
         
-        else:  # member login
+        else:
+            # Regular user access
             if not user:
                 flash('Account not found. Please verify your account first using the Discord bot.', 'error')
                 conn.close()
-                return redirect(url_for('member_login'))
-            
-            if user[6] != 'verified':  # status column
-                flash('Your account is not verified. Please complete verification using the Discord bot.', 'warning')
-                conn.close()
-                return redirect(url_for('member_login'))
+                return redirect(url_for('verify'))
             
             session['user_id'] = user[0]  # database ID
             session['discord_id'] = discord_id
             session['username'] = username
             session['avatar_url'] = avatar_url
-            session['highrise_username'] = user[3]  # highrise_username column
+            session['highrise_username'] = user[3] if user[3] else None  # highrise_username column
             session['is_admin'] = False
             
             conn.close()
             log_activity('member_login_success', {'discord_id': discord_id}, user[0])
-            flash('Welcome back to the marketplace!', 'success')
+            flash('Welcome back to the depths of the marketplace.', 'success')
             return redirect(url_for('member_portal'))
         
     except Exception as e:
         logger.error(f"Authentication error: {e}")
         flash(f'Authentication error: {str(e)}', 'error')
-        return redirect(url_for('member_login' if auth_type == 'member' else 'login'))
+        return redirect(url_for('login'))
 
 @app.route('/dashboard')
 @require_auth
 def dashboard():
-    """Admin dashboard"""
+    """Admin dashboard - only accessible to admins"""
+    if not session.get('is_admin'):
+        flash('Access denied. Admin privileges required.', 'error')
+        return redirect(url_for('member_portal'))
+    
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -270,7 +255,7 @@ def dashboard():
         return render_template('dashboard.html', stats={})
 
 @app.route('/member-portal')
-@require_member_auth
+@require_verified_user
 def member_portal():
     """Member portal dashboard"""
     try:
@@ -299,7 +284,7 @@ def member_portal():
         return render_template('member_portal.html', user_listings=[], recent_listings=[])
 
 @app.route('/verify', methods=['GET', 'POST'])
-def web_verify():
+def verify():
     """Web-based verification"""
     if request.method == 'POST':
         highrise_username = request.form.get('highrise_username')
@@ -307,7 +292,7 @@ def web_verify():
         
         if not discord_id:
             flash('Please log in first', 'error')
-            return redirect(url_for('member_login'))
+            return redirect(url_for('login'))
         
         try:
             # Generate verification code
@@ -349,7 +334,7 @@ def web_verify():
     return render_template('verify.html')
 
 @app.route('/marketplace')
-@require_member_auth
+@require_verified_user
 def marketplace():
     """Member marketplace view"""
     try:
@@ -421,7 +406,7 @@ def logout():
         log_activity('logout', user_id=user_id)
     
     session.clear()
-    flash('Successfully logged out', 'info')
+    flash('You have been banished from Victor\'s domain.', 'info')
     return redirect(url_for('index'))
 
 @app.errorhandler(404)

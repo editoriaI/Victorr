@@ -1,188 +1,161 @@
 {% extends "base.html" %}
 
-{% block title %}Victor - Highrise Trading Bot{% endblock %}
+{% block title %}Victor HQ - Undead. Underpaid. Unbothered.{% endblock %}
 
 {% block content %}
 <div class="landing-page">
-    <!-- Discord Banner -->
-    <section class="discord-banner">
-        <div class="container-fluid p-0">
-            <img src="{{ url_for('static', filename='images/discord_banner.png') }}" 
-                 alt="hr blacklist - Discord Server" 
-                 class="discord-banner-image">
-        </div>
-    </section>
-
     <!-- Hero Section -->
     <section class="hero-section">
         <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <h1 class="hero-title">
-                        Meet <span class="text-primary">Victor</span>
-                    </h1>
-                    <p class="hero-subtitle">
-                        Your shadowy companion for Highrise trading
-                    </p>
-                    <p class="hero-description">
-                        Victor brings order to chaos in the Highrise marketplace. 
-                        Verify your identity, trade with confidence, and let the darkness guide your deals.
-                    </p>
-                    
-                    <div class="hero-actions">
-                        {% if not session.user_id %}
-                            <a href="{{ url_for('member_login') }}" class="btn btn-primary btn-lg me-3">
-                                <i data-feather="log-in"></i>
-                                Member Login
-                            </a>
-                            <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg me-3">
-                                <i data-feather="shield"></i>
-                                Admin Login
-                            </a>
-                        {% else %}
-                            {% if session.is_admin %}
-                            <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg me-3">
-                                <i data-feather="monitor"></i>
-                                Admin Dashboard
-                            </a>
+            <div class="row align-items-center min-vh-100">
+                <div class="col-lg-6">
+                    <div class="hero-content">
+                        <h1 class="hero-title">Victor HQ</h1>
+                        <p class="hero-subtitle">UNDEAD. UNDERPAID. UNBOTHERED</p>
+                        <p class="hero-description">
+                            Welcome to the depths of Victor's underwater domain. Here in the abyssal marketplace, 
+                            lost souls trade cursed artifacts and forbidden knowledge. Dive deep into the mysteries 
+                            that lie beneath the surface.
+                        </p>
+
+                        <div class="hero-actions">
+                            {% if session.user_id %}
+                                {% if session.is_admin %}
+                                <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg me-3">
+                                    <i data-feather="shield"></i>
+                                    Enter Admin Domain
+                                </a>
+                                {% else %}
+                                <a href="{{ url_for('member_portal') }}" class="btn btn-primary btn-lg me-3">
+                                    <i data-feather="compass"></i>
+                                    Enter the Depths
+                                </a>
+                                {% endif %}
                             {% else %}
-                            <a href="{{ url_for('member_portal') }}" class="btn btn-primary btn-lg me-3">
-                                <i data-feather="shopping-bag"></i>
-                                Member Portal
+                            <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg me-3">
+                                <i data-feather="anchor"></i>
+                                Dive Into Victor's Domain
                             </a>
                             {% endif %}
-                        {% endif %}
-                        <a href="https://discord.com/oauth2/authorize?client_id={{ discord_client_id }}&permissions=8&scope=bot%20applications.commands" 
-                           class="btn btn-outline-light btn-lg me-3" target="_blank">
-                            <i data-feather="plus-circle"></i>
-                            Add to Server
-                        </a>
-                        <a href="https://discord.gg/ZBXH4E7RDU" 
-                           class="btn btn-primary btn-lg" target="_blank">
-                            <i data-feather="users"></i>
-                            Join Server
-                        </a>
+
+                            <a href="#features" class="btn btn-outline-light btn-lg">
+                                <i data-feather="eye"></i>
+                                Explore the Depths
+                            </a>
+                        </div>
+
+                        <div class="curse-announcement mt-4">
+                            <div class="curse-badge">
+                                <i data-feather="zap"></i>
+                                Now Accepting Curse Submissions
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="col-md-6 text-center">
-                    <img src="{{ url_for('static', filename='images/photo-output_1752163771791.png') }}" 
-                         alt="Victor - Your Highrise Trading Bot" class="victor-banner">
+
+                <div class="col-lg-6">
+                    <div class="hero-visual">
+                        <div class="victor-character">
+                            <div class="character-glow"></div>
+                            <div class="character-text">DON'T SUMMON ME</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Features Section -->
-    <section class="features-section">
+    <section id="features" class="features-section">
         <div class="container">
             <div class="row">
                 <div class="col-12 text-center mb-5">
-                    <h2 class="section-title">What Victor Offers</h2>
-                    <p class="section-subtitle">Embrace the darkness of secure trading</p>
+                    <h2 class="section-title">Powers of the Deep</h2>
+                    <p class="section-subtitle">What ancient abilities await in Victor's underwater realm</p>
                 </div>
             </div>
-            
-            <div class="row g-4">
-                <div class="col-md-4">
+
+            <div class="row">
+                <div class="col-lg-4 col-md-6 mb-4">
                     <div class="feature-card">
                         <div class="feature-icon">
                             <i data-feather="shield"></i>
                         </div>
-                        <h3>Secure Verification</h3>
-                        <p>Link your Discord and Highrise accounts through bio verification. No passwords, no personal data.</p>
+                        <h3>Soul Verification</h3>
+                        <p>Prove your worth through Highrise profile verification. Only verified souls may trade in these cursed markets.</p>
                     </div>
                 </div>
-                
-                <div class="col-md-4">
+
+                <div class="col-lg-4 col-md-6 mb-4">
                     <div class="feature-card">
                         <div class="feature-icon">
                             <i data-feather="shopping-bag"></i>
                         </div>
-                        <h3>Marketplace</h3>
-                        <p>Buy and sell Highrise items with confidence. Browse categories, search items, and connect with traders.</p>
+                        <h3>Abyssal Marketplace</h3>
+                        <p>Trade rare items, cursed artifacts, and forbidden knowledge in Victor's underwater marketplace.</p>
                     </div>
                 </div>
-                
-                <div class="col-md-4">
+
+                <div class="col-lg-4 col-md-6 mb-4">
                     <div class="feature-card">
                         <div class="feature-icon">
-                            <i data-feather="monitor"></i>
+                            <i data-feather="users"></i>
                         </div>
-                        <h3>Admin Dashboard</h3>
-                        <p>Manage your server with Victor's web dashboard. Track users, monitor trades, and configure settings.</p>
+                        <h3>Community of the Damned</h3>
+                        <p>Connect with fellow lost souls and build relationships in this underwater community.</p>
                     </div>
                 </div>
-                
-                <div class="col-md-4">
+
+                <div class="col-lg-4 col-md-6 mb-4">
                     <div class="feature-card">
                         <div class="feature-icon">
-                            <i data-feather="activity"></i>
+                            <i data-feather="eye"></i>
                         </div>
-                        <h3>Real-time Updates</h3>
-                        <p>Get instant notifications about trades, verifications, and marketplace activity.</p>
+                        <h3>Watchful Eye</h3>
+                        <p>Victor's all-seeing gaze monitors all transactions and keeps the peace in the depths.</p>
                     </div>
                 </div>
-                
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i data-feather="lock"></i>
-                        </div>
-                        <h3>Privacy First</h3>
-                        <p>Victor respects your privacy. No data mining, no tracking, just secure trading.</p>
-                    </div>
-                </div>
-                
-                <div class="col-md-4">
+
+                <div class="col-lg-4 col-md-6 mb-4">
                     <div class="feature-card">
                         <div class="feature-icon">
                             <i data-feather="zap"></i>
                         </div>
-                        <h3>Lightning Fast</h3>
-                        <p>Optimized for speed with 24/7 uptime. Victor never sleeps, so your trades don't have to wait.</p>
+                        <h3>Curse Submissions</h3>
+                        <p>Submit your own curses and dark magic for approval in Victor's growing collection.</p>
                     </div>
                 </div>
-                
-                <div class="col-md-4">
+
+                <div class="col-lg-4 col-md-6 mb-4">
                     <div class="feature-card">
                         <div class="feature-icon">
-                            <i data-feather="users"></i>
+                            <i data-feather="anchor"></i>
                         </div>
-                        <h3>Join the Community</h3>
-                        <p>Connect with fellow traders on our Discord server. Share tips, find deals, and become part of Victor's crew.</p>
-                        <a href="https://discord.gg/ZBXH4E7RDU" class="btn btn-primary btn-sm mt-2" target="_blank">
-                            <i data-feather="users"></i>
-                            Join Discord
-                        </a>
+                        <h3>Anchor to Discord</h3>
+                        <p>Seamlessly integrated with Discord servers for easy management and community building.</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- CTA Section -->
+    <!-- Call to Action Section -->
     <section class="cta-section">
         <div class="container">
             <div class="row">
                 <div class="col-12 text-center">
-                    <h2 class="cta-title">Ready to enter the shadows?</h2>
+                    <h2 class="cta-title">Ready to Descend?</h2>
                     <p class="cta-description">
-                        Join the community of verified Highrise traders and experience secure, efficient trading like never before.
+                        Join Victor's underwater domain and become part of an exclusive community where the undead, 
+                        underpaid, and unbothered gather to trade in the shadows of the deep.
                     </p>
-                    
-                    <div class="cta-buttons">
-                        <a href="https://discord.gg/ZBXH4E7RDU" class="btn btn-primary btn-lg me-3" target="_blank">
-                            <i data-feather="users"></i>
-                            Join Our Discord
-                        </a>
-                        <a href="https://discord.com/oauth2/authorize?client_id={{ discord_client_id }}&permissions=8&scope=bot%20applications.commands" 
-                           class="btn btn-outline-light btn-lg" target="_blank">
-                            <i data-feather="plus-circle"></i>
-                            Add to Server
-                        </a>
-                    </div>
 
+                    {% if not session.user_id %}
+                    <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">
+                        <i data-feather="anchor"></i>
+                        Enter the Depths
+                    </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -190,13 +163,8 @@
 </div>
 
 <style>
-.landing-page {
-    background: var(--bg-primary);
-    color: var(--text-primary);
-}
-
 .hero-section {
-    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+    background: linear-gradient(135deg, #0a2a3a 0%, #1a3a4a 50%, #2a4a5a 100%);
     position: relative;
     overflow: hidden;
 }
@@ -208,385 +176,263 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><circle cx="200" cy="200" r="2" fill="rgba(255,95,162,0.1)"/><circle cx="800" cy="300" r="2" fill="rgba(161,161,161,0.1)"/><circle cx="400" cy="600" r="2" fill="rgba(255,95,162,0.1)"/><circle cx="900" cy="700" r="2" fill="rgba(161,161,161,0.1)"/></svg>');
-    animation: float 20s ease-in-out infinite;
-    pointer-events: none;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(52, 211, 153, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(52, 211, 153, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(52, 211, 153, 0.05) 0%, transparent 50%);
+    animation: float 8s ease-in-out infinite;
 }
 
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
+.hero-content {
+    z-index: 2;
+    position: relative;
 }
 
 .hero-title {
-    font-size: 3.5rem;
+    font-size: 4.5rem;
     font-weight: 700;
+    color: #34d399;
+    text-shadow: 0 0 30px rgba(52, 211, 153, 0.5);
     margin-bottom: 1rem;
-    background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-pink) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
 }
 
 .hero-subtitle {
-    font-size: 1.5rem;
-    color: var(--accent-steel);
-    margin-bottom: 1.5rem;
-    font-style: italic;
+    font-size: 1.2rem;
+    color: #6ee7b7;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
 }
 
 .hero-description {
-    font-size: 1.1rem;
-    color: var(--text-secondary);
+    font-size: 1.2rem;
+    color: #cbd5e1;
+    line-height: 1.8;
+    margin-bottom: 3rem;
+}
+
+.hero-actions {
     margin-bottom: 2rem;
-    line-height: 1.6;
 }
 
-.victor-avatar {
-    position: relative;
+.curse-announcement {
     display: flex;
-    justify-content: center;
-    align-items: center;
+    justify-content: flex-start;
 }
 
-.victor-image {
-    width: 300px;
-    height: 300px;
-    filter: drop-shadow(0 10px 30px rgba(255, 95, 162, 0.3));
-    animation: victorFloat 6s ease-in-out infinite;
-}
-
-@keyframes victorFloat {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    50% { transform: translateY(-10px) rotate(2deg); }
-}
-
-.avatar-glow {
-    position: absolute;
-    width: 400px;
-    height: 400px;
-    background: radial-gradient(circle, rgba(255, 95, 162, 0.1) 0%, transparent 70%);
-    border-radius: 50%;
-    animation: pulse 4s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 0.5; transform: scale(1); }
-    50% { opacity: 0.8; transform: scale(1.05); }
-}
-
-.floating-elements {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-}
-
-.floating-card {
-    position: absolute;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
+.curse-badge {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #1f2937;
+    padding: 1rem 2rem;
+    border-radius: 25px;
+    font-weight: 600;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    box-shadow: var(--shadow);
-    font-size: 0.9rem;
-    color: var(--text-primary);
-    animation: cardFloat 8s ease-in-out infinite;
+    animation: pulse 2s ease-in-out infinite;
+    box-shadow: 0 10px 30px rgba(251, 191, 36, 0.3);
 }
 
-.floating-card i {
-    color: var(--accent-pink);
-    width: 16px;
-    height: 16px;
+.hero-visual {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    position: relative;
 }
 
-.card-1 {
-    top: 20%;
-    left: -10%;
-    animation-delay: 0s;
+.victor-character {
+    width: 400px;
+    height: 400px;
+    background: linear-gradient(135deg, #1a3a4a, #2a4a5a);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 3px solid #34d399;
+    box-shadow: 
+        0 0 50px rgba(52, 211, 153, 0.3),
+        inset 0 0 50px rgba(52, 211, 153, 0.1);
+    animation: float 6s ease-in-out infinite;
 }
 
-.card-2 {
-    top: 60%;
-    right: -10%;
-    animation-delay: 2s;
+.character-glow {
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    right: -20px;
+    bottom: -20px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(52, 211, 153, 0.2) 0%, transparent 70%);
+    animation: glow 3s ease-in-out infinite alternate;
 }
 
-.card-3 {
-    bottom: 20%;
-    left: 10%;
-    animation-delay: 4s;
-}
-
-@keyframes cardFloat {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-15px); }
-}
-
-.hero-stats .stat-item {
-    padding: 1rem;
-}
-
-.stat-number {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--accent-pink);
-}
-
-.stat-label {
-    font-size: 0.9rem;
-    color: var(--text-muted);
+.character-text {
+    font-size: 1.2rem;
+    color: #34d399;
+    font-weight: 700;
+    text-align: center;
+    text-shadow: 0 0 20px rgba(52, 211, 153, 0.5);
+    letter-spacing: 1px;
 }
 
 .features-section {
     padding: 6rem 0;
-    background: var(--bg-secondary);
+    background: #1a3a4a;
 }
 
 .section-title {
-    font-size: 2.5rem;
-    font-weight: 600;
-    color: var(--text-primary);
+    font-size: 3rem;
+    font-weight: 700;
+    color: #34d399;
     margin-bottom: 1rem;
+    text-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
 }
 
 .section-subtitle {
-    font-size: 1.2rem;
-    color: var(--text-muted);
+    font-size: 1.3rem;
+    color: #94a3b8;
     font-style: italic;
 }
 
 .feature-card {
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 2rem;
+    background: rgba(26, 58, 74, 0.9);
+    border: 1px solid rgba(52, 211, 153, 0.3);
+    border-radius: 16px;
+    padding: 2.5rem;
     text-align: center;
     transition: all 0.3s ease;
     height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #34d399, #10b981);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
 }
 
 .feature-card:hover {
-    border-color: var(--accent-pink);
-    box-shadow: var(--shadow-hover);
-    transform: translateY(-5px);
+    border-color: #34d399;
+    box-shadow: 0 20px 40px rgba(52, 211, 153, 0.2);
+    transform: translateY(-10px);
+}
+
+.feature-card:hover::before {
+    transform: scaleX(1);
 }
 
 .feature-icon {
-    width: 60px;
-    height: 60px;
-    background: linear-gradient(135deg, var(--accent-pink), #e5527a);
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #34d399, #10b981);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 1.5rem;
+    margin: 0 auto 2rem;
+    box-shadow: 0 10px 30px rgba(52, 211, 153, 0.3);
 }
 
 .feature-icon i {
-    color: white;
-    width: 24px;
-    height: 24px;
+    color: #1f2937;
+    width: 32px;
+    height: 32px;
 }
 
 .feature-card h3 {
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: #f0f9ff;
     margin-bottom: 1rem;
 }
 
 .feature-card p {
-    color: var(--text-muted);
-    line-height: 1.6;
+    color: #94a3b8;
+    line-height: 1.7;
 }
 
 .cta-section {
     padding: 6rem 0;
-    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+    background: linear-gradient(135deg, #0a2a3a 0%, #1a3a4a 100%);
 }
 
 .cta-title {
-    font-size: 2.5rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 1rem;
+    font-size: 3rem;
+    font-weight: 700;
+    color: #34d399;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
 }
 
 .cta-description {
-    font-size: 1.2rem;
-    color: var(--text-muted);
-    margin-bottom: 2rem;
-    max-width: 600px;
+    font-size: 1.3rem;
+    color: #cbd5e1;
+    margin-bottom: 3rem;
+    max-width: 800px;
     margin-left: auto;
     margin-right: auto;
+    line-height: 1.7;
 }
 
-.login-section {
-    text-align: center;
-    margin-top: 1rem;
-    width: 100%;
-}
-
-.login-question {
-    font-size: 1.1rem;
-    color: var(--text-secondary);
-    margin-bottom: 1rem;
-    font-weight: 500;
-}
-
-.button-group, .cta-buttons {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    position: relative;
-    z-index: 10;
-}
-
-.button-group a, .cta-buttons a {
-    pointer-events: auto;
-    cursor: pointer;
-    position: relative;
-    z-index: 20;
-}
-
-.hero-actions {
-    position: relative;
-    z-index: 20;
-}
-
-.hero-actions a {
-    pointer-events: auto;
-    cursor: pointer;
+@keyframes glow {
+    from { opacity: 0.5; }
+    to { opacity: 1; }
 }
 
 @media (max-width: 768px) {
     .hero-title {
         font-size: 2.5rem;
     }
-    
+
     .hero-subtitle {
-        font-size: 1.2rem;
+        font-size: 1rem;
+        letter-spacing: 2px;
     }
-    
+
     .hero-description {
         font-size: 1rem;
-        padding: 0 1rem;
     }
-    
-    .victor-image {
-        width: 200px;
-        height: 200px;
+
+    .victor-character {
+        width: 250px;
+        height: 250px;
     }
-    
-    .floating-card {
-        display: none;
-    }
-    
-    .button-group {
-        flex-direction: column;
-        gap: 0.75rem;
-        width: 100%;
-        padding: 0 1rem;
-    }
-    
-    .button-group a {
-        width: 100%;
-        max-width: 280px;
-        margin: 0;
-        text-align: center;
-    }
-    
-    .login-question {
+
+    .character-text {
         font-size: 1rem;
-        padding: 0 1rem;
     }
-    
-    .hero-stats {
-        margin-top: 2rem;
+
+    .section-title {
+        font-size: 2rem;
     }
-    
-    .hero-stats .col-4 {
-        margin-bottom: 1rem;
-    }
-    
-    .feature-card {
-        margin-bottom: 2rem;
-    }
-    
+
     .cta-title {
         font-size: 2rem;
     }
-    
-    .cta-description {
-        font-size: 1rem;
-        padding: 0 1rem;
-    }
-}
 
-@media (max-width: 480px) {
-    .hero-title {
-        font-size: 2rem;
-    }
-    
-    .hero-subtitle {
+    .cta-description {
         font-size: 1.1rem;
     }
-    
-    .victor-image {
-        width: 150px;
-        height: 150px;
+
+    .hero-actions {
+        flex-direction: column;
+        gap: 1rem;
     }
-    
-    .button-group a {
-        padding: 0.75rem 1.5rem;
-        font-size: 0.95rem;
-    }
-    
-    .container {
-        padding-left: 1rem;
-        padding-right: 1rem;
+
+    .hero-actions .btn {
+        width: 100%;
+        margin-right: 0 !important;
     }
 }
 </style>
-{% endblock %}
-
-{% block scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Feather icons
-    if (typeof feather !== 'undefined') {
-        feather.replace();
-    }
-    
-    // Fix button click handlers
-    const buttons = document.querySelectorAll('.btn, .cta-buttons a, .hero-actions a');
-    buttons.forEach(button => {
-        button.style.pointerEvents = 'auto';
-        button.style.cursor = 'pointer';
-    });
-    
-    // Ensure all links work properly
-    const authLinks = document.querySelectorAll('a[href*="discord_auth"], a[href*="dashboard"]');
-    authLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            // Allow default navigation
-            console.log('Button clicked:', this.href);
-        });
-    });
-    
-    // Add to server button
-    const addToServerBtn = document.querySelector('a[href*="discord.com/oauth2/authorize"]');
-    if (addToServerBtn) {
-        addToServerBtn.addEventListener('click', function(e) {
-            // Allow default navigation to Discord
-            console.log('Add to server clicked');
-        });
-    }
-});
-</script>
 {% endblock %}
