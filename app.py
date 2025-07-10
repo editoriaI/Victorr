@@ -28,3 +28,20 @@ with app.app_context():
     # Make sure to import the models here or their tables won't be created
     import models  # noqa: F401
     db.create_all()
+from flask import Flask
+import os
+from pathlib import Path
+
+# Create Flask app
+app = Flask(__name__)
+
+# Configure Flask
+app.config['SECRET_KEY'] = os.getenv('SESSION_SECRET', 'your-secret-key-here')
+app.config['DATABASE_URL'] = os.getenv('DATABASE_URL', 'sqlite:///victor_bot.db')
+
+# Ensure instance directory exists
+instance_path = Path('instance')
+instance_path.mkdir(exist_ok=True)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)

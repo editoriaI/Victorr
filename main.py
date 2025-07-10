@@ -23,8 +23,6 @@ sys.path.insert(0, str(project_root))
 from bot.database import DatabaseManager
 from bot.commands import setup_commands
 from keep_alive import keep_alive
-from app import app  # Import Flask app for gunicorn
-import web_app  # Import web routes
 
 # Load environment variables
 load_dotenv()

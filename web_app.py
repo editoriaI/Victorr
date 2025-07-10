@@ -10,8 +10,22 @@ from urllib.parse import urlencode
 from datetime import datetime
 
 from flask import render_template, request, redirect, url_for, session, flash, jsonify
-from app import app, db
+from app import app
 from models import User, AdminUser, Listing, Transaction, ActivityLog, UserStatus, ListingStatus
+
+# Mock database for web app - replace with actual database integration later
+class MockDB:
+    @staticmethod
+    def session():
+        return MockDB()
+    
+    def add(self, obj):
+        pass
+    
+    def commit(self):
+        pass
+
+db = MockDB()
 
 # Discord OAuth2 Configuration
 DISCORD_CLIENT_ID = os.getenv('DISCORD_CLIENT_ID', '1234567890')

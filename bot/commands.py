@@ -765,18 +765,20 @@ import string
 logger = logging.getLogger(__name__)
 
 class VerificationView(discord.ui.View):
-    def __init__(self, verification_code: str, highrise_username: str):
+    def __init__(self, verification_code: str, highrise_username: str, bot):
         super().__init__(timeout=300)
         self.verification_code = verification_code
         self.highrise_username = highrise_username
+        self.bot = bot
 
     @discord.ui.button(label="Check Bio", style=discord.ButtonStyle.primary, emoji="🔍")
     async def check_bio(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.defer(ephemeral=True)
         
         try:
-            # Fetch Highrise profile
-            profile_data = await fetch_highrise_profile(self.highrise_username)
+            # Fetch Highrise profile using bot's utils
+            from bot.utils import HighriseAPI
+            profile_data = await HighriseAPI.get_user_by_username(self.highrise_username)
             
             if not profile_data:
                 embed = discord.Embed(
@@ -791,11 +793,9 @@ class VerificationView(discord.ui.View):
             bio = profile_data.get('bio', '')
             if self.verification_code in bio:
                 # Update user as verified
-                user = await get_user_by_discord_id(interaction.user.id)
-                if user:
-                    user.verified = True
-                    user.verified_at = datetime.utcnow()
-                    db.session.commit()
+                user_data = await self.bot.db.get_user_by_discord_id(str(interaction.user.id))
+                if user_data:
+                    await self.bot.db.verify_user(user_data['id'])
                 
                 embed = discord.Embed(
                     title="✅ Verification Complete",
@@ -819,84 +819,4 @@ class VerificationView(discord.ui.View):
                 color=0xFF0000
             )
             await interaction.followup.send(embed=embed, ephemeral=True)
-
-class BotCommands(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-        self.active_giveaways = {}
-
-    @app_commands.command(name="verify", description="Verify your Highrise account")
-    @app_commands.describe(highrise_username="Your Highrise username")
-    @app_commands.cooldown(1, 60.0, key=lambda i: i.user.id)
-    async def verify(self, interaction: discord.Interaction, highrise_username: str):
-        """Verify Highrise account via bio check"""
-        await interaction.response.defer(ephemeral=True)
-
-        try:
-            # Generate verification code
-            verification_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
-
-            # Check if user already exists
-            existing_user = await get_user_by_discord_id(interaction.user.id)
-            if existing_user and existing_user.verified:
-                embed = discord.Embed(
-                    title="✅ Already Verified",
-                    description=f"You are already verified as: **{existing_user.highrise_username}**",
-                    color=0x00FF00
-                )
-                await interaction.followup.send(embed=embed, ephemeral=True)
-                return
-
-            # Store verification attempt
-            if existing_user:
-                existing_user.verification_code = verification_code
-                existing_user.highrise_username = highrise_username
-                db.session.commit()
-            else:
-                user = User(
-                    discord_id=interaction.user.id,
-                    discord_username=str(interaction.user),
-                    highrise_username=highrise_username,
-                    verification_code=verification_code
-                )
-                db.session.add(user)
-                db.session.commit()
-
-            # Create verification embed
-            embed = discord.Embed(
-                title="🔮 Highrise Verification",
-                description=(
-                    f"To verify your account, add this code to your Highrise bio:\n\n"
-                    f"**`{verification_code}`**\n\n"
-                    "Once added, click **Check Bio** below."
-                ),
-                color=0xFF5FA2
-            )
-
-            embed.add_field(
-                name="📝 Instructions",
-                value=(
-                    "1. Open Highrise app\n"
-                    "2. Go to your profile\n" 
-                    "3. Edit your bio\n"
-                    "4. Add the code above\n"
-                    "5. Click Check Bio button"
-                ),
-                inline=False
-            )
-
-            embed.set_footer(text="Victor - Your darkness awaits")
-
-            # Create view with verification button
-            view = VerificationView(verification_code, highrise_username)
-
-            await interaction.followup.send(embed=embed, view=view, ephemeral=True)
-
-        except Exception as e:
-            logger.error(f"Error in verify command: {e}")
-            embed = discord.Embed(
-                title="❌ Error",
-                description="An error occurred during verification. Please try again later.",
-                color=0xFF0000
-            )
-            await interaction.followup.send(embed=embed, ephemeral=True)
+        

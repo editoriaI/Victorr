@@ -223,3 +223,59 @@ class MarketAnalytics(db.Model):
     
     def __repr__(self):
         return f'<MarketAnalytics {self.date}>'
+from datetime import datetime
+from enum import Enum
+
+class UserStatus(Enum):
+    PENDING = 'pending'
+    VERIFIED = 'verified'
+    BANNED = 'banned'
+
+class ListingStatus(Enum):
+    ACTIVE = 'active'
+    SOLD = 'sold'
+    EXPIRED = 'expired'
+    REMOVED = 'removed'
+
+# Placeholder models for web app compatibility
+class User:
+    def __init__(self, discord_id, discord_username, highrise_username=None):
+        self.discord_id = discord_id
+        self.discord_username = discord_username
+        self.highrise_username = highrise_username
+        self.status = UserStatus.PENDING
+        self.created_at = datetime.utcnow()
+        self.verified_at = None
+
+class AdminUser:
+    def __init__(self, discord_id, discord_username):
+        self.discord_id = discord_id
+        self.discord_username = discord_username
+        self.created_at = datetime.utcnow()
+        self.last_login = datetime.utcnow()
+
+class Listing:
+    def __init__(self, seller_id, item_name, item_category, price):
+        self.seller_id = seller_id
+        self.item_name = item_name
+        self.item_category = item_category
+        self.price = price
+        self.status = ListingStatus.ACTIVE
+        self.created_at = datetime.utcnow()
+
+class Transaction:
+    def __init__(self, listing_id, buyer_id, seller_id, amount):
+        self.listing_id = listing_id
+        self.buyer_id = buyer_id
+        self.seller_id = seller_id
+        self.amount = amount
+        self.created_at = datetime.utcnow()
+
+class ActivityLog:
+    def __init__(self, user_id, action, details=None, ip_address=None, user_agent=None):
+        self.user_id = user_id
+        self.action = action
+        self.details = details
+        self.ip_address = ip_address
+        self.user_agent = user_agent
+        self.created_at = datetime.utcnow()
