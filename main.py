@@ -119,7 +119,7 @@ class VictorBot(commands.Bot):
 
             # Add persistent views for marketplace buttons
             logger.info("Setting up persistent marketplace views...")
-            self.add_view(SellView(None, None, None))
+            self.add_view(SellView(0, "placeholder", "placeholder"))
             logger.info("Marketplace is ready for dark dealings!")
 
             # Sync commands

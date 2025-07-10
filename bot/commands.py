@@ -16,7 +16,7 @@ class SellView(discord.ui.View):
         self.item_name = item_name
         self.price = price
 
-    @discord.ui.button(label='📩 Notify Seller', style=discord.ButtonStyle.secondary, emoji='📩')
+    @discord.ui.button(label='📩 Notify Seller', style=discord.ButtonStyle.secondary, emoji='📩', custom_id='notify_seller_button')
     async def notify_seller(self, interaction: discord.Interaction, button: discord.ui.Button):
         try:
             seller = interaction.guild.get_member(self.seller_id)
