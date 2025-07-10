@@ -374,3 +374,42 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Error getting guild: {e}")
             return None
+
+    async def create_or_update_user(self, user_data: Dict[str, Any]) -> int:
+        """Create or update a user"""
+        try:
+            discord_id = user_data['discord_id']
+            
+            # Check if user exists
+            existing_user = await self.get_user_by_discord_id(discord_id)
+            
+            if existing_user:
+                # Update existing user
+                set_clauses = []
+                params = []
+                
+                for key, value in user_data.items():
+                    if key != 'discord_id':  # Don't update the ID
+                        set_clauses.append(f"{key} = ?")
+                        params.append(value)
+                
+                params.append(discord_id)
+                
+                sql = f"UPDATE users SET {', '.join(set_clauses)} WHERE discord_id = ?"
+                await self.connection.execute(sql, params)
+                await self.connection.commit()
+                return existing_user['id']
+            else:
+                # Create new user
+                columns = list(user_data.keys())
+                placeholders = ['?' for _ in columns]
+                values = list(user_data.values())
+                
+                sql = f"INSERT INTO users ({', '.join(columns)}) VALUES ({', '.join(placeholders)})"
+                cursor = await self.connection.execute(sql, values)
+                await self.connection.commit()
+                return cursor.lastrowid
+                
+        except Exception as e:
+            logger.error(f"Error creating/updating user: {e}")
+            raise
