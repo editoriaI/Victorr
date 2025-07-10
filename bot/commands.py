@@ -207,8 +207,10 @@ class AdminCog(commands.Cog):
     @app_commands.command(name="setup_server", description="Strips and rebuilds the server layout")
     @app_commands.checks.has_role("owner of this house")
     async def setup_server(self, interaction: discord.Interaction):
-        await interaction.response.send_message("🛠️ Starting server terraform. Please wait...", ephemeral=True)
+        await interaction.response.send_message("🛠️ Victor is terraforming the server. Please wait...", ephemeral=True)
         guild = interaction.guild
+        
+        logger.info(f"🏗️ Starting server terraform for {guild.name}")
 
         protected_roles = [
             "@everyone", "owner of this house", "event notifications", "giveaway notifications",
@@ -216,29 +218,43 @@ class AdminCog(commands.Cog):
         ]
 
         # Delete channels
+        logger.info("🗑️ Clearing existing channels...")
+        deleted_channels = 0
         for channel in guild.channels:
             try:
                 await channel.delete()
+                deleted_channels += 1
             except Exception:
                 continue
+        logger.info(f"✅ Deleted {deleted_channels} channels")
 
         # Delete non-protected roles
+        logger.info("🗑️ Removing non-essential roles...")
+        deleted_roles = 0
         for role in guild.roles:
             name = role.name.lower()
             if role.managed or name in [r.lower() for r in protected_roles] or "ping" in name:
                 continue
             try:
                 await role.delete()
+                deleted_roles += 1
             except Exception:
                 continue
+        logger.info(f"✅ Deleted {deleted_roles} roles")
 
         # Create required roles
+        logger.info("👑 Creating essential roles...")
         role_names = ["Unverified", "Verified", "Trusted Seller", "Moderator", "Rules Accepted"]
+        created_roles = 0
         for name in role_names:
             if not discord.utils.get(guild.roles, name=name):
                 await guild.create_role(name=name)
+                created_roles += 1
+                logger.info(f"  ➕ Created role: {name}")
+        logger.info(f"✅ Created {created_roles} new roles")
 
         # Create channel layout
+        logger.info("🏗️ Building Victor's domain...")
         layout = {
             "Welcome": ["rules", "announcements", "new-user-verification"],
             "Marketplace": ["item-sales", "gold-sales", "nft-sales", "sold-alerts"],
@@ -250,26 +266,90 @@ class AdminCog(commands.Cog):
             "Admin": ["victors-vault"]
         }
 
+        total_channels = sum(len(ch_list) for ch_list in layout.values())
+        created_channels = 0
+        
         for cat_name, ch_list in layout.items():
+            logger.info(f"📁 Creating category: {cat_name}")
             category = await guild.create_category(cat_name)
             for ch_name in ch_list:
                 channel = await guild.create_text_channel(ch_name, category=category)
+                created_channels += 1
+                logger.info(f"  ➕ Created #{ch_name} ({created_channels}/{total_channels})")
 
                 # Set permissions for Victor's Vault
                 if ch_name == "victors-vault":
-                    await channel.set_permissions(guild.default_role, read_messages=False)
+                    logger.info("🏛️ Setting up Victor's exclusive vault...")
+                    
+                    # Deny access to everyone by default
+                    await channel.set_permissions(guild.default_role, read_messages=False, send_messages=False)
+                    
+                    # Grant access to privileged roles
                     owner_role = discord.utils.get(guild.roles, name="owner of this house")
                     mod_role = discord.utils.get(guild.roles, name="Moderator")
                     trusted_role = discord.utils.get(guild.roles, name="Trusted Seller")
 
+                    vault_members = []
                     if owner_role:
-                        await channel.set_permissions(owner_role, read_messages=True, send_messages=True)
+                        await channel.set_permissions(owner_role, 
+                                                    read_messages=True, 
+                                                    send_messages=True, 
+                                                    manage_messages=True,
+                                                    embed_links=True,
+                                                    attach_files=True)
+                        vault_members.append("House Owner")
+                        
                     if mod_role:
-                        await channel.set_permissions(mod_role, read_messages=True, send_messages=True)
+                        await channel.set_permissions(mod_role, 
+                                                    read_messages=True, 
+                                                    send_messages=True,
+                                                    embed_links=True,
+                                                    attach_files=True)
+                        vault_members.append("Moderators")
+                        
                     if trusted_role:
-                        await channel.set_permissions(trusted_role, read_messages=True, send_messages=True)
+                        await channel.set_permissions(trusted_role, 
+                                                    read_messages=True, 
+                                                    send_messages=True,
+                                                    embed_links=True)
+                        vault_members.append("Trusted Sellers")
+                    
+                    logger.info(f"🔐 Victor's Vault secured! Access granted to: {', '.join(vault_members)}")
+                    
+                    # Send a welcome message to the vault
+                    vault_embed = discord.Embed(
+                        title="🏛️ Welcome to Victor's Vault",
+                        description="*\"Welcome to my inner sanctum. Here, only the worthy may tread.\"*\n\n"
+                                  "This channel is reserved for:\n"
+                                  "• 🏠 Server administration\n"
+                                  "• 🔒 Private discussions\n"
+                                  "• 📊 Analytics and reports\n"
+                                  "• 🛠️ Bot configuration\n\n"
+                                  "*Remember: What happens in the vault, stays in the vault.*",
+                        color=0x8B0000,
+                        timestamp=datetime.utcnow()
+                    )
+                    vault_embed.set_footer(text="Victor's Private Domain")
+                    await channel.send(embed=vault_embed)
 
-        await interaction.followup.send("✅ Server terraform complete.")
+        logger.info(f"🎉 Server terraform complete! Created {len(layout)} categories and {total_channels} channels")
+        
+        # Send completion summary
+        summary_embed = discord.Embed(
+            title="🏗️ Server Terraform Complete",
+            description=f"Victor has successfully reconstructed {guild.name}:\n\n"
+                       f"📁 **{len(layout)}** categories created\n"
+                       f"📝 **{total_channels}** channels created\n"
+                       f"👑 **{created_roles}** roles created\n"
+                       f"🗑️ **{deleted_channels}** old channels removed\n"
+                       f"🗑️ **{deleted_roles}** old roles removed\n\n"
+                       f"*\"Another domain falls under my influence...\"*",
+            color=0x8B0000,
+            timestamp=datetime.utcnow()
+        )
+        summary_embed.set_footer(text="Victor's Server Terraform System")
+        
+        await interaction.followup.send(embed=summary_embed)
 
     @app_commands.command(name="giveaway", description="Start a giveaway")
     @app_commands.checks.has_role("owner of this house")
