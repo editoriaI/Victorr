@@ -14,11 +14,11 @@ logger = logging.getLogger(__name__)
 
 class DatabaseManager:
     """Manages all database operations for the bot"""
-    
+
     def __init__(self, db_path: str = "victor_bot.db"):
         self.db_path = db_path
         self.connection = None
-        
+
     async def initialize(self):
         """Initialize database connection and create tables"""
         try:
@@ -28,7 +28,7 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Database initialization failed: {e}")
             raise
-    
+
     async def _create_tables(self):
         """Create database tables if they don't exist"""
         tables = [
@@ -128,17 +128,17 @@ class DatabaseManager:
             )
             """
         ]
-        
+
         for table_sql in tables:
             await self.connection.execute(table_sql)
-        
+
         await self.connection.commit()
-    
+
     async def close(self):
         """Close database connection"""
         if self.connection:
             await self.connection.close()
-    
+
     # User management methods
     async def create_user(self, discord_id: str, discord_username: str) -> int:
         """Create a new user"""
@@ -152,7 +152,7 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Error creating user: {e}")
             raise
-    
+
     async def get_user_by_discord_id(self, discord_id: str) -> Optional[Dict[str, Any]]:
         """Get user by Discord ID"""
         try:
@@ -167,14 +167,21 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Error getting user by Discord ID: {e}")
             return None
-    
+
     async def get_user_by_highrise_username(self, username: str) -> Optional[Dict[str, Any]]:
-        """Get user by Highrise username"""
+        """Get user by Highrise username (case-insensitive)"""
         try:
             cursor = await self.connection.execute(
                 "SELECT * FROM users WHERE highrise_username = ?", (username,)
             )
             row = await cursor.fetchone()
+
+            if not row:
+                cursor = await self.connection.execute(
+                "SELECT * FROM users WHERE LOWER(highrise_username) = LOWER(?)", (username,)
+            )
+            row = await cursor.fetchone()
+
             if row:
                 columns = [description[0] for description in cursor.description]
                 return dict(zip(columns, row))
@@ -182,7 +189,7 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Error getting user by Highrise username: {e}")
             return None
-    
+
     async def get_user_by_highrise_username_case_insensitive(self, username: str) -> Optional[Dict[str, Any]]:
         """Get user by Highrise username (case-insensitive)"""
         try:
@@ -197,7 +204,7 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Error getting user by Highrise username (case-insensitive): {e}")
             return None
-    
+
     async def update_user_highrise_username(self, user_id: int, username: str) -> bool:
         """Update user's Highrise username"""
         try:
@@ -210,7 +217,7 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Error updating user Highrise username: {e}")
             return False
-    
+
     async def update_user_verification(self, user_id: int, highrise_username: str, 
                                      highrise_user_id: str, verification_code: str) -> bool:
         """Update user verification details"""
@@ -228,7 +235,7 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Error updating user verification: {e}")
             return False
-    
+
     async def verify_user(self, user_id: int) -> bool:
         """Mark user as verified"""
         try:
@@ -241,22 +248,22 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Error verifying user: {e}")
             return False
-    
+
     async def get_user_stats(self) -> Dict[str, int]:
         """Get user statistics"""
         try:
             # Total users
             cursor = await self.connection.execute("SELECT COUNT(*) FROM users")
             total = (await cursor.fetchone())[0]
-            
+
             # Verified users
             cursor = await self.connection.execute("SELECT COUNT(*) FROM users WHERE status = 'verified'")
             verified = (await cursor.fetchone())[0]
-            
+
             # Pending users
             cursor = await self.connection.execute("SELECT COUNT(*) FROM users WHERE status = 'pending'")
             pending = (await cursor.fetchone())[0]
-            
+
             return {
                 'total': total,
                 'verified': verified,
@@ -265,7 +272,7 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Error getting user stats: {e}")
             return {'total': 0, 'verified': 0, 'pending': 0}
-    
+
     # Listing management methods
     async def create_listing(self, seller_id: int, item_name: str, item_category: str,
                            price: int, description: str, contact_method: str) -> int:
@@ -282,7 +289,7 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Error creating listing: {e}")
             raise
-    
+
     async def get_active_listings(self, limit: int = 20, offset: int = 0) -> List[Dict[str, Any]]:
         """Get active marketplace listings"""
         try:
@@ -301,7 +308,7 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Error getting active listings: {e}")
             return []
-    
+
     async def search_listings(self, query: str, category: str = None) -> List[Dict[str, Any]]:
         """Search marketplace listings"""
         try:
@@ -310,13 +317,13 @@ class DatabaseManager:
                      JOIN users u ON l.seller_id = u.id 
                      WHERE l.status = 'active' AND l.item_name LIKE ?"""
             params = [f"%{query}%"]
-            
+
             if category:
                 sql += " AND l.item_category = ?"
                 params.append(category)
-            
+
             sql += " ORDER BY l.created_at DESC LIMIT 20"
-            
+
             cursor = await self.connection.execute(sql, params)
             rows = await cursor.fetchall()
             columns = [description[0] for description in cursor.description]
@@ -324,7 +331,7 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Error searching listings: {e}")
             return []
-    
+
     async def get_user_listings(self, user_id: int) -> List[Dict[str, Any]]:
         """Get user's listings"""
         try:
@@ -338,7 +345,7 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Error getting user listings: {e}")
             return []
-    
+
     # Guild management methods
     async def add_guild(self, guild_id: str, guild_name: str, owner_id: str) -> bool:
         """Add a new guild"""
@@ -352,7 +359,7 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Error adding guild: {e}")
             return False
-    
+
     async def get_guild(self, guild_id: str) -> Optional[Dict[str, Any]]:
         """Get guild by ID"""
         try:

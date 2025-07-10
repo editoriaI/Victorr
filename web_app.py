@@ -40,12 +40,33 @@ def log_activity(action, details=None, user_id=None):
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
+        
+        # Create activity_logs table if it doesn't exist
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS activity_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT,
+                action TEXT NOT NULL,
+                details TEXT,
+                ip_address TEXT,
+                user_agent TEXT,
+                endpoint TEXT,
+                method TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
         cursor.execute(
-            "INSERT INTO activity_logs (user_id, action, details, ip_address, user_agent, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-            (user_id, action, str(details) if details else None, request.remote_addr, request.headers.get('User-Agent'), datetime.now())
+            "INSERT INTO activity_logs (user_id, action, details, ip_address, user_agent, endpoint, method, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (user_id, action, str(details) if details else None, request.remote_addr, 
+             request.headers.get('User-Agent'), request.endpoint, request.method, datetime.now())
         )
         conn.commit()
         conn.close()
+        
+        # Also log to console for real-time monitoring
+        logger.info(f"User Activity: {action} | User: {user_id or 'Anonymous'} | IP: {request.remote_addr} | Endpoint: {request.endpoint}")
+        
     except Exception as e:
         logger.error(f"Error logging activity: {e}")
 
@@ -79,6 +100,28 @@ def require_verified_user(f):
         return f(*args, **kwargs)
     decorated_function.__name__ = f.__name__
     return decorated_function
+
+@app.before_request
+def log_request():
+    """Log all incoming requests"""
+    # Skip logging for static files and health checks
+    if not request.endpoint or request.endpoint == 'static':
+        return
+    
+    user_id = session.get('user_id')
+    discord_id = session.get('discord_id')
+    username = session.get('username', 'Anonymous')
+    
+    log_activity(
+        f"page_visit_{request.endpoint}", 
+        {
+            'method': request.method,
+            'args': dict(request.args),
+            'form_data': dict(request.form) if request.form else None,
+            'username': username
+        }, 
+        user_id or discord_id
+    )
 
 @app.route('/')
 def index():
@@ -185,8 +228,23 @@ def discord_callback():
         else:
             # Regular user access
             if not user:
-                flash('Account not found. Please verify your account first using the Discord bot.', 'error')
+                # Create a pending user record for verification
+                cursor.execute(
+                    "INSERT INTO users (discord_id, discord_username, status) VALUES (?, ?, 'pending')",
+                    (discord_id, username)
+                )
+                conn.commit()
+                user_id = cursor.lastrowid
+                
+                session['user_id'] = user_id
+                session['discord_id'] = discord_id
+                session['username'] = username
+                session['avatar_url'] = avatar_url
+                session['is_admin'] = False
+                
                 conn.close()
+                log_activity('new_user_login', {'discord_id': discord_id, 'username': username}, user_id)
+                flash('Welcome! Please complete verification to access the marketplace.', 'info')
                 return redirect(url_for('verify'))
             
             session['user_id'] = user[0]  # database ID
@@ -197,7 +255,7 @@ def discord_callback():
             session['is_admin'] = False
             
             conn.close()
-            log_activity('member_login_success', {'discord_id': discord_id}, user[0])
+            log_activity('member_login_success', {'discord_id': discord_id, 'username': username}, user[0])
             flash('Welcome back to the depths of the marketplace.', 'success')
             return redirect(url_for('member_portal'))
         
@@ -287,12 +345,16 @@ def member_portal():
 def verify():
     """Web-based verification"""
     if request.method == 'POST':
-        highrise_username = request.form.get('highrise_username')
+        highrise_username = request.form.get('highrise_username', '').strip()
         discord_id = session.get('discord_id')
         
         if not discord_id:
             flash('Please log in first', 'error')
             return redirect(url_for('login'))
+        
+        if not highrise_username:
+            flash('Please enter a valid Highrise username', 'error')
+            return render_template('verify.html')
         
         try:
             # Generate verification code
@@ -304,31 +366,48 @@ def verify():
             conn = get_db_connection()
             cursor = conn.cursor()
             
-            # Check if user exists
-            cursor.execute("SELECT id FROM users WHERE discord_id = ?", (discord_id,))
+            # Check if user exists (case-insensitive check for existing users)
+            cursor.execute("SELECT id, highrise_username FROM users WHERE discord_id = ?", (discord_id,))
             user = cursor.fetchone()
+            
+            # Also check if this Highrise username is already taken by someone else (case-insensitive)
+            cursor.execute("SELECT discord_id FROM users WHERE LOWER(highrise_username) = LOWER(?) AND discord_id != ?", 
+                          (highrise_username, discord_id))
+            existing_user = cursor.fetchone()
+            
+            if existing_user:
+                flash(f'Highrise username "{highrise_username}" is already linked to another Discord account', 'error')
+                conn.close()
+                return render_template('verify.html')
             
             if user:
                 # Update existing user
                 cursor.execute(
-                    "UPDATE users SET highrise_username = ?, verification_code = ? WHERE discord_id = ?",
+                    "UPDATE users SET highrise_username = ?, verification_code = ?, status = 'pending' WHERE discord_id = ?",
                     (highrise_username, verification_code, discord_id)
                 )
+                logger.info(f"Updated existing user {discord_id} with Highrise username: {highrise_username}")
             else:
                 # Create new user
                 cursor.execute(
                     "INSERT INTO users (discord_id, discord_username, highrise_username, verification_code, status) VALUES (?, ?, ?, ?, 'pending')",
                     (discord_id, session.get('username'), highrise_username, verification_code)
                 )
+                logger.info(f"Created new user {discord_id} with Highrise username: {highrise_username}")
             
             conn.commit()
             conn.close()
             
-            flash(f'Please add this code to your Highrise bio: {verification_code}', 'info')
+            log_activity('verification_code_generated', {
+                'highrise_username': highrise_username,
+                'verification_code': verification_code
+            }, discord_id)
+            
+            flash(f'Verification code generated! Please add this code to your Highrise bio: {verification_code}', 'info')
             return render_template('verify.html', verification_code=verification_code, highrise_username=highrise_username)
             
         except Exception as e:
-            logger.error(f"Verification error: {e}")
+            logger.error(f"Verification error for {discord_id}: {e}")
             flash(f'Verification error: {str(e)}', 'error')
     
     return render_template('verify.html')
